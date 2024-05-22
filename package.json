@@ -1,0 +1,27 @@
+{
+  "name": "commentsystem",
+  "version": "6.2.6",
+  "description": "Comment System JS to TS",
+  "main": "commsys6.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mike-SL2/CommentSystem.git"
+  },
+  "keywords": [
+    "comments",
+    "replies",
+    "user",
+    "chat",
+    "javaScript",
+    "typescript"
+  ],
+  "author": "MS",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mike-SL2/CommentSystem/issues"
+  },
+  "homepage": "https://github.com/Mike-SL2/CommentSystem#readme"
+}

@@ -1,10 +1,7 @@
 ﻿/* script for file commsys6.html v.6.26js */
 "use strict";
 /* uBase - users personal data from 'userbase.js' */
-let user = [],
-  usrID = null,
-  cBase = null,
-  rBase = null,
+let 
   /* spHoopWidth - summarized space Hooper width for Reply block left margin (showReply())*/
   spHoopWidth = sTor("spHoopWidth"),
   mobile376 = false;
@@ -35,31 +32,6 @@ const normal = "normal",
 
 centeredWrap.style.display = "block";
 
-/* bases initialization procedure */
-const baseInit = (keyName, cbFunction) => {
-  let xValue = sTor(keyName);
-  if (xValue === null) {
-    xValue = cbFunction();
-    sTor(keyName, xValue);
-  }
-  return xValue;
-};
-/* user ID index base init */
-usrID = baseInit("usrID", () => {
-  return {
-    byCIDX: [] /* to get user ID number by comment index */,
-    byRIDX: [] /* to get user (replier) ID number by reply index */,
-    byName: {} /* to get user ID number by user name */,
-  };
-});
-/* comments base init */
-cBase = baseInit("cBase", () => {
-  return [];
-});
-/* replies base init */
-rBase = baseInit("rBase", () => {
-  return [];
-});
 const getDateTime = () => {
   const tday1 = new Date(),
     date1 = [
