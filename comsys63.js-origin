@@ -1,4 +1,4 @@
-﻿//  v.6.3 (comsys63.js)
+﻿//  v.6.31 (comsys63.js)
 /* users passports base */
 "use strict";
 let uBase = [
@@ -34,7 +34,7 @@ const doc = document,
   px = "px",
   requestString = "https://randomuser.me/api/",
   normal = "normal",
-  ver = 63,
+  ver = 631,
   minusColor = "red",
   plusColor = "rgb(138,197,64)",
   dec = "-",
@@ -172,29 +172,28 @@ const baseInit = (keyName, cbFunction) => {
 };
 /* load previous users base from storage */
 const auxBase = sTor("uBase");
-/* user ID index base init */
-usrID = baseInit("usrID", () => {
-  return {
-    byCIDX: [] /* to get user ID number by comment index */,
-    byRIDX: [] /* to get user (replier) ID number by reply index */,
-    byName: {} /* to get user ID number by user name */,
-  };
-});
-/* comments base init */
-cBase = baseInit("cBase", () => {
-  return [];
-});
-/* replies base init */
-rBase = baseInit("rBase", () => {
-  return [];
-});
-
 const script2 = () => {
   /*	----	M A i N  	P R O C E D U R E 	----	*/
   /* script 2 - v.6.3 */
   /* spHoopWidth - summarized space Hooper width for Reply block left margin (showReply())*/
   let spHoopWidth = sTor("spHoopWidth");
   centeredWrap.style.display = "block";
+  /* user ID index base init */
+  usrID = baseInit("usrID", () => {
+    return {
+      byCIDX: [] /* to get user ID number by comment index */,
+      byRIDX: [] /* to get user (replier) ID number by reply index */,
+      byName: {} /* to get user ID number by user name */,
+    };
+  });
+  /* comments base init */
+  cBase = baseInit("cBase", () => {
+    return [];
+  });
+  /* replies base init */
+  rBase = baseInit("rBase", () => {
+    return [];
+  });
   const getDateTime = () => {
     const tday1 = new Date(),
       date1 = [
@@ -1412,6 +1411,7 @@ if (auxBase) {
       if (errorFlag) {
         progressWrap.remove();
       } else {
+        localStorage.clear();
         baseToStor(uBase);
       }
       setTimeout(() => {
