@@ -1,13 +1,28 @@
 //  v.6.31 (comsys63.ts)
 /* users passports base */
 "use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var uBase = [
     { name: "Андрей", imgSrc: "img/a.jpg" } /*	uBase[0]	*/,
     { name: "Борис", imgSrc: "img/b.jpg" } /*	uBase[1]	*/,
     { name: "Вика", imgSrc: "img/c.jpg" } /*	uBase[2]	*/,
     { name: "Гоша", imgSrc: "img/g.jpg" },
-], /*	uBase[3]	*/ validUser = 0, errorFlag = false, user = [], usrID = null, cBase = null, rBase = null, mobile376 = false, auxMockDateTime = null, // to store the previous function mockDateTime return value
-activeUser, funcPool = []; // to store event handlers functions pool, only for 'buildReplyButtonsHandlers'
+], /*	uBase[3]	*/ validUser = 0, errorFlag = false, usrID, cBase, rBase, mobile376 = false, auxMockDateTime, // to store the previous function mockDateTime return value
+funcPool = []; // to store event handlers functions pool, only for 'buildReplyButtonsHandlers'
 var doc = document, px = "px", requestString = "https://randomuser.me/api/", normal = "normal", ver = 631, minusColor = "red", plusColor = "rgb(138,197,64)", dec = "-", inc = "+", messageWrap = doc.createElement("div"), progressWrap = doc.createElement("div"), meStyl = messageWrap.style, progStyl = progressWrap.style, uBaseLen = uBase.length, timing1 = 2000, timing2 = timing1 / 4, brdWdth = "1px solid ", shadow = "3px 3px 2px 1px lightgray";
 meStyl.border = brdWdth + "red";
 meStyl.padding = '8' + px;
@@ -168,6 +183,329 @@ function script2() {
             }
         });
         return { date: "".concat(date1[0], ".").concat(date1[1]), time: "".concat(date1[2], ":").concat(date1[3]) };
+    }
+    ;
+    function mockDateTime(a) {
+        var tday1 = new Date();
+        var day, month, monthPlus = false, date1;
+        if (a) {
+            day = Number(a["date"].slice(0, 2));
+            month = Number(a["date"].slice(3, 5));
+        }
+        else {
+            day = 0;
+            month = 1;
+        }
+        day++;
+        if (day > 30) {
+            day = 1;
+            monthPlus = true;
+        }
+        if (monthPlus) {
+            month++;
+            monthPlus = false;
+            if (month > 12) {
+                month = 1;
+            }
+        }
+        date1 = [day, month, tday1.getHours(), tday1.getMinutes()];
+        date1.forEach(function (x, n, date1item) {
+            if (x < 10) {
+                date1item[n] = "0" + x;
+            }
+        });
+        return { date: "".concat(date1[0], ".").concat(date1[1]), time: "".concat(date1[2], ":").concat(date1[3]) };
+    }
+    ;
+    function buildUsersIndexTable() {
+        // ext. for new users enrollment to acquire userID by name
+        uBase.forEach(function (i, count) {
+            usrID["byName"][i["name"]] = count;
+        });
+    }
+    ;
+    buildUsersIndexTable();
+    baseToStor(usrID);
+    var Comment = /** @class */ (function () {
+        function Comment(userName) {
+            this.user = userName;
+            this.showFavoritesOnly = false;
+            var loadParams = [
+                {
+                    keyName: "uFav", initValue: { cIDX: [], rIDX: [] }
+                },
+                {
+                    keyName: "uChange",
+                    initValue: { rPermissions: [], cPermissions: [] },
+                },
+                {
+                    keyName: "uSort",
+                    initValue: { sortCriteria: null, sortOrder: Comment.iniSortOrder },
+                },
+            ];
+            loadParams.forEach(function (paramObj, n) {
+                var sTorKeyName = "".concat(paramObj["keyName"], "-").concat(userName);
+                if (sTor(sTorKeyName) === null) {
+                    sTor(sTorKeyName, paramObj["initValue"]);
+                }
+                loadParams[n]["keyName"] = sTorKeyName;
+            });
+            this.uFav = sTor(loadParams[0]["keyName"]);
+            this.uChange = sTor(loadParams[1]["keyName"]);
+            this.uSort = sTor(loadParams[2]["keyName"]);
+        }
+        Object.defineProperty(Comment.prototype, "getName", {
+            get: function () {
+                return this.user;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Comment.prototype, "getIDByName", {
+            get: function () {
+                return usrID["byName"][this.user];
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Comment.prototype.rebuildComments = function () { };
+        Comment.prototype.placeComment = function (commentText) { };
+        Comment.prototype.placeReply = function (comIDX, orderNumber) { };
+        Comment.prototype.allowToChangeRate = function (IDX, base) { return false; };
+        Comment.prototype.showFavOnly = function (state) {
+            if (state === void 0) { state = false; }
+            switch (state) {
+                case true:
+                    this.showFavoritesOnly = true;
+                    break;
+                case false:
+                    this.showFavoritesOnly = false;
+                    break;
+            }
+            return this.showFavoritesOnly;
+        };
+        Comment.prototype.setFav = function (commentIndex, baseType) {
+            if (baseType === void 0) { baseType = cBase; }
+            return false;
+        };
+        Comment.prototype.findFav = function (commentIndex, baseType) {
+            if (baseType === void 0) { baseType = cBase; }
+            return false;
+        };
+        Comment.iniSortOrder = true;
+        return Comment;
+    }());
+    var User = /** @class */ (function (_super) {
+        __extends(User, _super);
+        function User() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        User.prototype.placeComment = function (commentText) {
+            auxMockDateTime = mockDateTime(auxMockDateTime);
+            var dateTime1 = auxMockDateTime, cBaseLen;
+            // Get real Date and Time if no Date and Time specified
+            if (!dateTime1) {
+                dateTime1 = getDateTime();
+            }
+            var messageRecord = {
+                text: commentText,
+                rate: 0,
+                date: dateTime1["date"],
+                time: dateTime1["time"],
+                answers: 0,
+            };
+            usrID["byCIDX"].push(this.getIDByName);
+            cBase.push(messageRecord);
+            baseToStor(usrID);
+            baseToStor(cBase);
+            cBaseLen = cBase.length - 1;
+            showComment(cBaseLen);
+            underLineSwitch();
+        };
+        User.prototype.placeReply = function (comIDX, orderNumber) {
+            auxMockDateTime = mockDateTime(auxMockDateTime);
+            inputTextForm(this.user, orderNumber, auxMockDateTime, comIDX);
+        };
+        User.prototype.allowToChangeRate = function (IDX, base) {
+            function poolTest(auxPool, IDX) {
+                var zero = 0;
+                var maxChanges = userRatingChangesLimit, changes = zero;
+                maxChanges--;
+                if (maxChanges < zero) {
+                    maxChanges = zero;
+                }
+                auxPool.forEach(function (i) {
+                    if (i === IDX) {
+                        changes++;
+                    }
+                });
+                if (changes > maxChanges) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+            ;
+            if (base === cBase) {
+                if (poolTest(this.uChange["cPermissions"], IDX)) {
+                    this.uChange["cPermissions"].push(IDX);
+                    sTor("uChange-".concat(this.user), this.uChange);
+                    return true;
+                }
+            }
+            else {
+                if (poolTest(this.uChange["rPermissions"], IDX)) {
+                    this.uChange["rPermissions"].push(IDX);
+                    sTor("uChange-".concat(this.user), this.uChange);
+                    return true;
+                }
+            }
+            return false;
+        };
+        User.prototype.rebuildComments = function (sortCriteria, reverse) {
+            if (sortCriteria === void 0) { sortCriteria = null; }
+            if (reverse === void 0) { reverse = false; }
+            var ordPic = doc.querySelector(".ordPic"), ordPicStl = ordPic.style;
+            var vShift = Math.round(Number(ordPicStl.height.slice(0, 2)) * 2), shiftSign = "", angle = 45;
+            if (sortCriteria === null) {
+                if (this.uSort["sortCriteria"] === null) {
+                    sortCriteria = defaultSortMenuItemNumber;
+                }
+                else {
+                    sortCriteria = this.uSort["sortCriteria"];
+                }
+            }
+            dispChoice(sortCriteria);
+            if (this.uSort["sortCriteria"] === sortCriteria) {
+                if (reverse) {
+                    this.uSort["sortOrder"] = !this.uSort["sortOrder"];
+                }
+            }
+            else {
+                this.uSort["sortOrder"] = Comment.iniSortOrder;
+            }
+            rebuildAll(menuSort[sortCriteria]["krit"], this.uSort["sortOrder"]);
+            if (this.uSort["sortOrder"]) {
+                angle = -135;
+                shiftSign = "-";
+                vShift += 15;
+            }
+            ordPicStl.rotate = "".concat(angle, "deg");
+            ordPicStl.translate = "0px ".concat(shiftSign).concat(vShift, "%");
+            this.uSort["sortCriteria"] = sortCriteria;
+            sTor("uSort-".concat(this.user), this.uSort);
+        };
+        User.prototype.setFav = function (commentIndex, baseType) {
+            if (baseType === void 0) { baseType = cBase; }
+            var favAux = [], inBase = true, favTyp = "cIDX";
+            if (baseType === rBase) {
+                favTyp = "rIDX";
+            }
+            this.uFav[favTyp].forEach(function (uFavCommentIndex) {
+                if (commentIndex === uFavCommentIndex) {
+                    inBase = false;
+                }
+                else {
+                    favAux.push(uFavCommentIndex);
+                }
+            });
+            if (inBase) {
+                favAux.push(commentIndex);
+            }
+            this.uFav[favTyp] = favAux;
+            sTor("uFav-".concat(this.user), this.uFav);
+            heartSwitch();
+            return inBase;
+        };
+        User.prototype.findFav = function (commentIndex, baseType) {
+            if (baseType === void 0) { baseType = cBase; }
+            var inBase = false, favTyp = "cIDX";
+            if (baseType === rBase) {
+                favTyp = "rIDX";
+            }
+            this.uFav[favTyp].forEach(function (uFavCommentIndex) {
+                if (commentIndex === uFavCommentIndex) {
+                    inBase = true;
+                }
+            });
+            return inBase;
+        };
+        return User;
+    }(Comment));
+    var user = [];
+    uBase.forEach(function (uBaseItem) {
+        user.push(new User(uBaseItem["name"]));
+    });
+    var activeUser = user[Math.floor(Math.random() * 4)];
+    function favPresent() {
+        if (activeUser.uFav["cIDX"].length || activeUser.uFav["rIDX"].length) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    ;
+    function heartSwitch() {
+        var heartPic = inActFavPic;
+        if (favPresent()) {
+            heartPic = actFavPic;
+        }
+        doc.querySelector(".heartPic").src = "img/heart".concat(heartPic, ".gif");
+    }
+    ;
+    function cls(remForm) {
+        if (remForm === void 0) { remForm = false; }
+        /* cls(false) - keep main input form;
+       cls(true)  - remove everything (include the form) */
+        var iNameToRemove = [
+            ".commentBlock",
+            ".commentBlockSeparator",
+            ".spHoop",
+            ".vertMargin",
+            ".replyForm",
+            ".replyBlock",
+        ];
+        if (remForm) {
+            iNameToRemove.push(".inputForm");
+        }
+        var blocksToRemove = [];
+        iNameToRemove.forEach(function (i) {
+            blocksToRemove.push(doc.querySelectorAll(i));
+        });
+        blocksToRemove.forEach(function (blocks) {
+            blocks.forEach(function (block) {
+                block.remove();
+            });
+        });
+    }
+    ;
+    function parentElFind(event) {
+        if (event.target instanceof HTMLImageElement) {
+            return event.target.parentElement;
+        }
+        else {
+            return event.target;
+        }
+    }
+    ;
+    function buildReplyButtonsHandlers() {
+        /* old handlers removing */
+        funcPool.forEach(function (arg) {
+            arg["node"].removeEventListener("click", arg["func"]);
+        });
+        funcPool = [];
+        /* setting new handlers */
+        var replyBtn = doc.querySelectorAll(".bottomCommentF0");
+        replyBtn.forEach(function (i, orderNumber) {
+            function placeReplyForm(event) {
+                activeUser.placeReply(Number(parentElFind(event).dataset.cIDX), orderNumber);
+            }
+            ;
+            funcPool.push({ node: i, func: placeReplyForm });
+            i.addEventListener("click", placeReplyForm);
+        });
     }
     ;
 }
