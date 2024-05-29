@@ -524,7 +524,84 @@ function buildReplyButtonsHandlers ():void {
     i.addEventListener("click", placeReplyForm);
   });
 };
-
+function dateToNumber (stringDate:string):number {
+  const a:number = Number(stringDate),
+    b:number = Math.floor(a);    
+  return b + Math.round((a - b) * 100 * 31);
+};
+function rebuildAll (krit:string = normal, order:boolean = false) {
+  let auxArray:number[] = [];
+  cls(true);
+  (container as HTMLDivElement).style.display = "block";
+  if (krit === normal) {
+    // sort by normal
+    cBase.forEach((commentRecord:cBaseItem, cIDX:number) => {
+      if (order) {
+        auxArray.push(cIDX);
+      } else {
+        auxArray.unshift(cIDX);
+      }
+    });
+  } else {
+    // sort by answers,rate,date
+    let sBase:number[] = [];
+    //sBase Fill
+    let locBas:number|null =null;
+    cBase.forEach((commentRecord:cBaseItem) => {
+      let result:number;
+      if (commentRecord) {
+        if (krit === "date") {
+          result = dateToNumber(commentRecord["date"]);
+        } else {
+          result = commentRecord[krit];
+        }
+        sBase.push(result);
+        /* locBase searching */
+       
+        if (locBas === null) {                   
+          locBas = result;
+        } else {
+          if ((order && result  > (locBas as number)) || (!order && result < (locBas as number))) {
+          locBas = result;
+          }
+        }
+      }
+    });
+    if (order) {
+      ((locBas as any) as number)++;
+    } else {
+      ((locBas as any) as number)--;
+    } // local base setting
+    let lockNext:number, cIDXi:number|null;
+    do {
+      lockNext = (locBas as any) as number;
+      cIDXi = null;
+      sBase.forEach((ans:number, n:number) => {
+        if ((order && ans < lockNext) || (!order && ans > lockNext)) {
+          lockNext = ans;
+          cIDXi = n;
+        }
+      });
+      if (cIDXi === null) {
+        break;
+      } else {
+        auxArray.push(cIDXi);
+        sBase[cIDXi] = (locBas as any) as number;
+      }
+    } while (true);
+  }
+  auxArray.forEach((comIDX:number) => {
+    if (!activeUser.showFavOnly() || activeUser.findFav(comIDX)) {
+      showComment(comIDX, krit, order);
+    }
+  });
+  buildReplyButtonsHandlers();
+  //main comment form 0 - main form
+  const inputTextFormMain= doc.querySelector(".inputForm") as HTMLDivElement;
+  if (!inputTextFormMain) {
+    inputTextForm(activeUser.getName, 0);
+  }
+};
 
 
 
