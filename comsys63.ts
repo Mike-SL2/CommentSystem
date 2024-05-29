@@ -597,13 +597,47 @@ function rebuildAll (krit:string = normal, order:boolean = false) {
   });
   buildReplyButtonsHandlers();
   //main comment form 0 - main form
-  const inputTextFormMain= doc.querySelector(".inputForm") as HTMLDivElement;
+  const inputTextFormMain:HTMLDivElement= doc.querySelector(".inputForm") as HTMLDivElement;
   if (!inputTextFormMain) {
     inputTextForm(activeUser.getName, 0);
   }
 };
-
-
+function getProp (DomElement:HTMLElement, propertyName:string):string{
+  return window
+    .getComputedStyle(DomElement, null)
+    .getPropertyValue(propertyName);
+};
+function putDiv (
+  className:string,
+  baseForm:HTMLDivElement|null = null,
+  mode:number|null = null,
+  innerContent:string = "",
+):HTMLDivElement{
+  if (mode === null) {
+    if (baseForm === null) {
+      mode = 3;
+    } else {
+      mode = 2;
+    }
+  }
+  const sampDiv:HTMLDivElement = doc.createElement("div");
+  sampDiv.className = className;
+  sampDiv.innerHTML = innerContent;
+  switch (mode) {
+    case 0:
+      (container as HTMLDivElement).insertBefore(sampDiv, baseForm);
+      break;
+    case 1:
+       (baseForm as HTMLDivElement).innerHTML = "";
+    case 2:
+      (baseForm as HTMLDivElement).appendChild(sampDiv);
+    case 3:
+      break;
+    default:
+      console.log("putDiv:incorrect operMode -", mode);
+  }
+  return sampDiv;
+};
 
 
 };
