@@ -9,7 +9,6 @@ type rBaseItem = {toCIDX:number,text:string,rate:number,date:string,time:string}
 type rBaseType = rBaseItem[];
 type usrIDType = {byCIDX:number[],byRIDX:number[],byName:{[key:string]:number}};
 type menuSortType = {text:string, krit:string}[];
-type cmElement = HTMLElement|null;
 type nStr = string|null;
 type dateTimeObject = {date:string,time:string};  
 let uBase:userBaseType = [
@@ -78,11 +77,11 @@ const widthBrkPnt:number = 376,
   ],
   inActFavPic:string = "Gry",
   actFavPic:string = "Red",
-  centeredWrap:cmElement = doc.querySelector(".bin1"),
-  container:cmElement  = doc.querySelector(".commentContainer"),
-  commntsAmount:cmElement  = doc.querySelector(".commntsAmount"),
-  commntsHeaderLine:cmElement  = doc.querySelector(".commntsHeaderLine"),
-  favControl:cmElement  = doc.querySelector(".favCntrl");
+  centeredWrap:HTMLDivElement  = doc.querySelector(".bin1") as HTMLDivElement,
+  container:HTMLDivElement   = doc.querySelector(".commentContainer") as HTMLDivElement,
+  commntsAmount:HTMLDivElement   = doc.querySelector(".commntsAmount") as HTMLDivElement,
+  commntsHeaderLine:HTMLDivElement   = doc.querySelector(".commntsHeaderLine") as HTMLDivElement,
+  favControl:HTMLDivElement   = doc.querySelector(".favCntrl") as HTMLDivElement;
 
   function insBrik():void  {
     const progressBrik:HTMLDivElement = doc.createElement("div"),
@@ -388,7 +387,7 @@ class User extends Comment {
     return false;
   }
   rebuildComments(sortCriteria:null|number = null, reverse:boolean = false) {
-    const ordPic:cmElement = doc.querySelector(".ordPic"),
+    const ordPic:HTMLDivElement = doc.querySelector(".ordPic") as  HTMLDivElement,
       ordPicStl:CSSStyleDeclaration = (ordPic as HTMLElement).style;
     let vShift:number = Math.round(Number(ordPicStl.height.slice(0, 2)) * 2),
       shiftSign:string = "",
@@ -638,10 +637,63 @@ function putDiv (
   }
   return sampDiv;
 };
+  // 			---	sort order Menu selector	---
+  const sortMenuWrap:HTMLDivElement= doc.querySelector(".sortMenuWrap") as HTMLDivElement,
+    sortMenuLink:HTMLDivElement = putDiv("sortMenu", sortMenuWrap),
+    sortMenuBottom:number = sortMenuLink.getBoundingClientRect().bottom,
+    listContainer:HTMLDivElement  = putDiv("listContainer", sortMenuWrap),
+    sortOrdPicWrap:HTMLDivElement  = putDiv("sortMenuOrdPic", sortMenuWrap),
+    ordPic:HTMLDivElement  = putDiv("ordPic", sortOrdPicWrap),
+    ordPicWidth:number  = ordPic.getBoundingClientRect().width,
+    back:string = getProp(ordPic, "background-color"),
+    srtMnuSty:CSSStyleDeclaration = listContainer.style,
+    ordPicStl:CSSStyleDeclaration = ordPic.style;
+
+  ordPicStl.background = `linear-gradient(135deg, ${back} 50%, transparent 50%)`;
+  ordPicStl.transform = "skew(15deg, 15deg)";
+  ordPicStl.height = (ordPicWidth as any) as string + px;
+  sortOrdPicWrap.style.width =
+    (Math.round(Math.sqrt(3 * Math.pow(ordPicWidth, 2))) as any) as string + px;
+  sortMenuWrap.style.position = "relative";
+  srtMnuSty.display = "none";
+  srtMnuSty.position = "absolute";
+  srtMnuSty.zIndex = "1";
+  srtMnuSty.top = (Math.round(sortMenuBottom * 0.7) as any) as string  + px;
+
+  function underLineSwitch(evTarget:HTMLDivElement|null = null):void {
+    const comHeaderChilds:HTMLDivElement[] = [commntsAmount, sortMenuLink, favControl],
+      activeClr:string = "black",
+      inActiveClr:string = "gray",
+      borderThickness:string = '5' + px;
+
+    comHeaderChilds.forEach((i:HTMLDivElement) => {
+      const ist:CSSStyleDeclaration = i.style;
+      if (i === evTarget) {
+        ist.color = activeClr;
+        ist.textDecoration = "";
+        ist.borderBottom = `${borderThickness} solid ${activeClr}`;
+      } else {
+        ist.color = inActiveClr;
+        ist.borderBottom = `${borderThickness} solid transparent`;
+        ist.textDecoration = "underline";
+        ist.textUnderlinePosition = "under";
+      }
+    });
+    if (evTarget === favControl) {
+      activeUser.showFavOnly(true);
+    } else {
+      activeUser.showFavOnly(false);
+    }
+    activeUser.rebuildComments();
+  };
+
+
+
+
+
 
 
 };
-
 if (auxBase) {
     uBase = auxBase;
     script2();

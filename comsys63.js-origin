@@ -648,6 +648,7 @@ const script2 = () => {
   srtMnuSty.position = "absolute";
   srtMnuSty.zIndex = "1";
   srtMnuSty.top = Math.round(sortMenuBottom * 0.7) + px;
+  
   const underLineSwitch = (evTarget = null) => {
     const comHeaderChilds = [commntsAmount, sortMenuLink, favControl],
       activeClr = "black",
