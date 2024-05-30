@@ -669,8 +669,301 @@ function script2() {
         activeUser.rebuildComments();
     }
     ;
+    commntsAmount.addEventListener("click", function () {
+        underLineSwitch(commntsAmount);
+    });
+    function dispChoice(iNumber) {
+        var itemMark = doc.querySelectorAll(".itemMark");
+        itemMark.forEach(function (mark) {
+            mark.style.opacity = "0";
+        });
+        if (iNumber != null) {
+            itemMark[iNumber].style.opacity = "1";
+            sortMenuLink.innerHTML = "".concat(menuSort[iNumber]["text"]);
+        }
+    }
+    ;
+    menuSort.forEach(function (i, n) {
+        var itemLine = putDiv("listItem", listContainer), mark1 = putDiv("itemMark", itemLine), mark1Stl = mark1.style, markSign = putDiv("markSign", mark1), markSignStl = markSign.style, itemDesc = putDiv("itemDesc", itemLine, 2, "".concat(i["text"]));
+        var nStr = n;
+        if (i["krit"] === normal) {
+            mark1Stl.opacity = "1";
+        }
+        else {
+            mark1Stl.opacity = "0";
+        }
+        markSignStl.borderStyle = "solid";
+        markSignStl.rotate = "35deg";
+        markSign.dataset.choiceNum = nStr;
+        itemLine.dataset.choiceNum = nStr;
+        mark1.dataset.choiceNum = nStr;
+        itemDesc.dataset.choiceNum = nStr;
+        itemLine.addEventListener("click", function (ev) {
+            if (ev.target instanceof HTMLDivElement) {
+                var iNumber = Number(ev.target.dataset.choiceNum);
+                dispChoice(iNumber);
+                activeUser.rebuildComments(iNumber, true);
+                srtMnuSty.display = "none";
+            }
+        });
+    });
+    sortMenuLink.addEventListener("click", function () {
+        underLineSwitch(sortMenuLink);
+        if (srtMnuSty.display === "block") {
+            srtMnuSty.display = "none";
+            return;
+        }
+        else {
+            srtMnuSty.display = "block";
+        }
+        var itemMark = doc.querySelectorAll(".itemMark"), itemDesc = doc.querySelector(".itemDesc"), itemDescDim = itemDesc.getBoundingClientRect(), markDim = Math.floor(itemDescDim.height), markSign = doc.querySelectorAll(".markSign");
+        itemMark.forEach(function (mark) {
+            var markStl = mark.style;
+            var markDimStr = markDim;
+            markStl.width = markDimStr + px;
+            markStl.height = markDimStr + px;
+        });
+        markSign.forEach(function (sign) {
+            var signStl = sign.style;
+            signStl.width = Math.floor(markDim / 2.7) + px;
+            signStl.height = Math.floor(markDim / 1.5) + px;
+            signStl.translate = "0px -" + Math.floor(markDim / 5) + px;
+        });
+    });
+    doc.addEventListener("click", function (ev) {
+        if (!(ev.target === listContainer || ev.target === sortMenuLink) &&
+            srtMnuSty.display === "block") {
+            srtMnuSty.display = "none";
+        }
+    });
+    listContainer.addEventListener("click", function () {
+        srtMnuSty.display = "none";
+    });
+    // end of 		---	sort order Menu selector		---
+    //         		---	favorites on/off Menu control		---
+    favControl.addEventListener("click", function () {
+        underLineSwitch(favControl);
+    });
+    // end of 		---	favorites on/off Menu control		---
+    function putBtn(className1, baseForm, caption, func) {
+        var sample = doc.createElement("button");
+        sample.innerHTML = caption;
+        sample.className = className1;
+        if (baseForm) {
+            baseForm.appendChild(sample);
+        }
+        else {
+            baseForm = doc.querySelector("div");
+            doc.body.insertBefore(sample, baseForm);
+        }
+        sample.addEventListener("click", func);
+        return sample;
+    }
+    ;
+    function strToNum(str) {
+        return Number(str.match(/\d+/));
+    }
+    ;
+    /* mobile 376 px width mode */
+    function checkWidth() {
+        if (strToNum(getProp(centeredWrap, "width")) === widthBrkPnt) {
+            mobile376 = true;
+        }
+        else {
+            mobile376 = false;
+        }
+    }
+    ;
+    function buildBlock(baseForm, IDX, baseType) {
+        if (baseType === void 0) { baseType = false; }
+        var prefixFv = "<img class='cmntFavFild' src='img/heart", postfix1 = ".gif'>\u0412 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E", inFav = "".concat(prefixFv).concat(actFavPic).concat(postfix1, "\u043C"), toFav = "".concat(prefixFv).concat(inActFavPic).concat(postfix1, "\u0435"), startDiv = "<div class=", termDiv = "</div>", backArrowPic = "<img class='talkBackArrow' src='img/talkBackArrow.gif'>", dateTimeFieldClass = "".concat(startDiv, "'dateTimeField'>"), dateTimeSepar = "89162318y", dateTimeSpace = 9;
+        var replyToName = "* unknown *", userData = uBase[usrID["byCIDX"][IDX]], hFC = [], base = cBase, bottomF = "bottomCommentF", bFC = [], reply = false, favItemOrder = 1;
+        function pushReplyTo() {
+            hFC.push("".concat(backArrowPic));
+            hFC.push("".concat(startDiv, "'replyToName'>").concat(replyToName).concat(termDiv));
+        }
+        ;
+        if (baseType) {
+            reply = true;
+            base = rBase;
+            userData = uBase[usrID["byRIDX"][IDX]];
+            bottomF = "bottomReplyF";
+            favItemOrder = 0;
+            replyToName = uBase[usrID["byCIDX"][base[IDX]["tocIDX"]]]["name"];
+            if (!mobile376) {
+                pushReplyTo();
+            }
+        }
+        else {
+            bFC.push("".concat(backArrowPic, "\u041E\u0442\u0432\u0435\u0442\u0438\u0442\u044C"));
+        }
+        bFC.push(toFav);
+        hFC.unshift(userData["name"]);
+        hFC.push("".concat(dateTimeFieldClass).concat(base[IDX]["date"]).concat(termDiv));
+        hFC.push(dateTimeSepar);
+        hFC.push("".concat(dateTimeFieldClass).concat(base[IDX]["time"]).concat(termDiv));
+        /* Rating control block preforming */
+        var rateBlock0 = [dec, base[IDX]["rate"], inc];
+        var rateBlock = rateBlock0;
+        if (mobile376) {
+            /* rateBlock = rateBlock0.toReversed(); */
+            rateBlock = [];
+            rateBlock0.forEach(function (item) { rateBlock.unshift(item); });
+            if (reply) {
+                pushReplyTo();
+            }
+        }
+        bFC = bFC.concat(rateBlock);
+        /*User Avatar Section*/
+        putDiv("userAvatarWrap", baseForm, 2, "<img src=".concat(userData["imgSrc"], " class=\"userAvatar\">"));
+        /*User Content Section Left Margin */
+        putDiv("userContentLMargin", baseForm);
+        /*User Content Section: Header (FIO, BackArrow Sign, Date, Time*/
+        var usrCntnt = putDiv("userContent", baseForm);
+        /*User content section header container*/
+        var contentHeader = putDiv("contentHeader", usrCntnt);
+        /*Header blocks building*/
+        /* hFC = [userData['name'],'1.BackArrow',replyToName,base[IDX]['date'],'*S*',base[IDX]['time']]; */
+        hFC.forEach(function (hFC, i) {
+            var space = putDiv("headerF headerF".concat(i), contentHeader, 2, hFC);
+            if (hFC === dateTimeSepar) {
+                space.style.width = dateTimeSpace + px;
+                space.innerHTML = "";
+            }
+        });
+        /*User Comment Textblock*/
+        putDiv("commentText", usrCntnt, 2, "".concat(base[IDX]["text"]));
+        /*User content section bottom container*/
+        var contentBottom = putDiv("contentBottom", usrCntnt);
+        /*Bottom blocks building*/
+        /* bFC = ['0.Reply',`${base[IDX]['fav']}`,`${base[IDX]['rate']}`]; */
+        function rateClr(rateValue, elementStyle) {
+            // set the comment/reply rate counter font color. 
+            // negative values rate - 'minusColor'; positive values with 'plusColor'
+            if (rateValue > 0) {
+                elementStyle.color = plusColor;
+            }
+            else {
+                if (rateValue === 0) {
+                    elementStyle.color = "";
+                }
+                else {
+                    elementStyle.color = minusColor;
+                }
+            }
+        }
+        ;
+        var rateCtrlWrap = null;
+        bFC.forEach(function (bFC, i) {
+            var contentBottomF = null;
+            if ((bFC === inc || bFC === dec) && !rateCtrlWrap) {
+                rateCtrlWrap = putDiv("rateCtrlWrap", contentBottom);
+            }
+            if (rateCtrlWrap) {
+                contentBottomF = putDiv("rateCtrl", rateCtrlWrap, 2, "".concat(bFC));
+                if (mobile376) {
+                    contentBottomF.style.margin = '0' + px;
+                }
+            }
+            else {
+                contentBottomF = putDiv("bottomF ".concat(bottomF).concat(i), contentBottom, 2, "".concat(bFC));
+            }
+            // cBFs - auxiliary local constant
+            var cBFs = contentBottomF.style;
+            if (bFC === inc || bFC === dec) {
+                cBFs.borderRadius = "50%";
+                cBFs.backgroundColor = "rgb(230,230,230)";
+                if (bFC === inc) {
+                    cBFs.color = plusColor;
+                }
+                else {
+                    cBFs.color = minusColor;
+                }
+                /* set + and - rating control wrap width equal to the height from CSS file */
+                var iHeight = Math.floor(contentBottomF.getBoundingClientRect().height);
+                cBFs.width = iHeight + px;
+                contentBottomF.addEventListener("click", function (ev) {
+                    if (ev.target instanceof HTMLDivElement) {
+                        var bottomBlock = ev.target.parentElement, rateDisplayEl = bottomBlock.querySelector(".rateCtrl").nextSibling;
+                        if (activeUser.allowToChangeRate(IDX, base)) {
+                            if (ev.target.innerHTML === dec) {
+                                base[IDX]["rate"]--;
+                            }
+                            else {
+                                base[IDX]["rate"]++;
+                            }
+                            rateClr(base[IDX]["rate"], rateDisplayEl.style);
+                            baseToStor(base);
+                            rateDisplayEl.innerHTML = base[IDX]["rate"];
+                        }
+                    }
+                    ;
+                });
+            }
+            else {
+                if (rateCtrlWrap) {
+                    // rating counter style
+                    cBFs.cursor = "default";
+                    rateClr(base[IDX]["rate"], cBFs);
+                    cBFs.fontWeight = "600";
+                }
+                contentBottomF.dataset.cIDX = IDX;
+                if (favItemOrder === i) {
+                    if (reply) {
+                        cBFs.marginLeft = "";
+                    }
+                    else {
+                        cBFs.marginLeft = 15 + px;
+                    }
+                    if (activeUser.findFav(IDX, base)) {
+                        contentBottomF.innerHTML = inFav;
+                    }
+                    else {
+                        contentBottomF.innerHTML = toFav;
+                    }
+                    contentBottomF.addEventListener("click", function (ev) {
+                        if (activeUser.setFav(Number(parentElFind(ev).dataset.cIDX), base)) {
+                            contentBottomF.innerHTML = inFav;
+                            // parent comment switch to favorite
+                            if (base === rBase) {
+                                if (!activeUser.findFav(rBase[IDX]["tocIDX"])) {
+                                    // comment block favorite display on
+                                    var cmntFavFPool = doc.querySelectorAll(".bottomCommentF1");
+                                    cmntFavFPool.forEach(function (i) {
+                                        if (Number(i.dataset.cIDX) === rBase[IDX]["tocIDX"]) {
+                                            i.innerHTML = inFav;
+                                        }
+                                    });
+                                    activeUser.setFav(rBase[IDX]["tocIDX"]);
+                                }
+                            }
+                        }
+                        else {
+                            contentBottomF.innerHTML = toFav;
+                            if (base === cBase) {
+                                // reply blocks favorites displays off
+                                var rplytFavFPool_1 = doc.querySelectorAll(".bottomReplyF0");
+                                rBase.forEach(function (i, rIDX) {
+                                    if (i["tocIDX"] === IDX && activeUser.findFav(rIDX, rBase)) {
+                                        activeUser.setFav(rIDX, rBase);
+                                        // all replies favorites displays set off
+                                        rplytFavFPool_1.forEach(function (replyFav) {
+                                            if (Number(replyFav.dataset.cIDX) === rIDX) {
+                                                replyFav.innerHTML = toFav;
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            } //bFC is not plus or minus (else end)
+        }); //bFC.forEach end
+    }
+    ;
 }
-;
+; /* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {
     uBase = auxBase;
     script2();

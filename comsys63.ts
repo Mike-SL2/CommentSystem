@@ -7,8 +7,10 @@ type cBaseItem = {text:string,rate:number,date:string,time:string,answers:number
 type cBaseType = cBaseItem[];
 type rBaseItem = {toCIDX:number,text:string,rate:number,date:string,time:string};
 type rBaseType = rBaseItem[];
+    type crBaseType = cBaseType|rBaseType;
 type usrIDType = {byCIDX:number[],byRIDX:number[],byName:{[key:string]:number}};
-type menuSortType = {text:string, krit:string}[];
+type menuSortItem = {text:string, krit:string};
+type menuSortType = menuSortItem [];
 type nStr = string|null;
 type dateTimeObject = {date:string,time:string};  
 let uBase:userBaseType = [
@@ -686,14 +688,328 @@ function putDiv (
     }
     activeUser.rebuildComments();
   };
+  commntsAmount.addEventListener("click", function():void{
+    underLineSwitch(commntsAmount);
+  });
+  function dispChoice(iNumber:number|null):void {
+    const itemMark:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".itemMark");
+    itemMark.forEach((mark:HTMLDivElement) => {
+      mark.style.opacity = "0";
+    });
+    
+    if (iNumber!=null) {
+      itemMark[iNumber].style.opacity = "1";
+      sortMenuLink.innerHTML = `${menuSort[iNumber]["text"]}`;
+    }
+  };
+  menuSort.forEach((i:menuSortItem, n:number) => {
+    const itemLine:HTMLDivElement = putDiv("listItem", listContainer),
+      mark1:HTMLDivElement = putDiv("itemMark", itemLine),
+      mark1Stl = mark1.style,
+      markSign:HTMLDivElement = putDiv("markSign", mark1),
+      markSignStl = markSign.style,
+      itemDesc:HTMLDivElement = putDiv("itemDesc", itemLine, 2, `${i["text"]}`);
+    let nStr = (n as any) as string;  
+    if (i["krit"] === normal) {
+      mark1Stl.opacity = "1";
+    } else {
+      mark1Stl.opacity = "0";
+    }
 
+    markSignStl.borderStyle = "solid";
+    markSignStl.rotate = "35deg";
 
+    markSign.dataset.choiceNum = nStr;
+    itemLine.dataset.choiceNum = nStr;
+    mark1.dataset.choiceNum = nStr;
+    itemDesc.dataset.choiceNum = nStr;
 
+    itemLine.addEventListener("click", function (ev:MouseEvent):void {
+      if (ev.target instanceof HTMLDivElement) {
+        const iNumber:number|null = Number((ev.target as HTMLDivElement).dataset.choiceNum);
+          dispChoice(iNumber);
+          activeUser.rebuildComments(iNumber, true);
+          srtMnuSty.display = "none";}
+    });
+  });
+  sortMenuLink.addEventListener("click", function():void {
+    underLineSwitch(sortMenuLink);
+    if (srtMnuSty.display === "block") {
+      srtMnuSty.display = "none";
+      return;
+    } else {
+      srtMnuSty.display = "block";
+    }
 
+    const itemMark:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".itemMark"),
+      itemDesc:HTMLDivElement = doc.querySelector(".itemDesc") as HTMLDivElement,
+      itemDescDim:DOMRect = itemDesc.getBoundingClientRect(),
+      markDim:number = Math.floor(itemDescDim.height),
+      markSign:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".markSign");
+    itemMark.forEach((mark:HTMLDivElement) => {
+      const markStl:CSSStyleDeclaration = mark.style;
+      let markDimStr = (markDim as any) as string;
+      markStl.width = markDimStr + px;
+      markStl.height = markDimStr + px;
+    });
+    markSign.forEach((sign:HTMLDivElement) => {
+      const signStl:CSSStyleDeclaration = sign.style;
+      signStl.width = (Math.floor(markDim / 2.7) as any) as string + px;
+      signStl.height = (Math.floor(markDim / 1.5) as any) as string + px;
+      signStl.translate = "0px -" + (Math.floor(markDim / 5)  as any) as string + px;
+    });
+  });
+  doc.addEventListener("click", function(ev:MouseEvent):void {
+    if (
+      !(ev.target === listContainer || ev.target === sortMenuLink) &&
+      srtMnuSty.display === "block"
+    ) {
+      srtMnuSty.display = "none";
+    }
+  });
+  listContainer.addEventListener("click", function ():void {
+    srtMnuSty.display = "none";
+  });
+  // end of 		---	sort order Menu selector		---
+  //         		---	favorites on/off Menu control		---
+  favControl.addEventListener("click", function():void {
+    underLineSwitch(favControl);
+  });
+  // end of 		---	favorites on/off Menu control		---
+  function putBtn (className1:string, baseForm:HTMLDivElement, caption:string, func:EventListener):HTMLButtonElement {
+    const sample:HTMLButtonElement = doc.createElement("button");
+    sample.innerHTML = caption;
+    sample.className = className1;
+    if (baseForm) {
+      baseForm.appendChild(sample);
+    } else {
+      baseForm = doc.querySelector("div") as HTMLDivElement;
+      doc.body.insertBefore(sample, baseForm);
+    }
+    sample.addEventListener("click", func);
+    return sample;
+  };
+  function strToNum (str:string):number {
+    return Number(str.match(/\d+/));
+  };
+  /* mobile 376 px width mode */
+  function checkWidth():void  {
+    if (strToNum(getProp(centeredWrap, "width")) === widthBrkPnt) {
+      mobile376 = true;
+    } else {
+      mobile376 = false;
+    }
+  };
+  function buildBlock (baseForm:HTMLDivElement, IDX:number, baseType:boolean = false):void  {
+    const prefixFv:string = `<img class='cmntFavFild' src='img/heart`,
+      postfix1:string  = `.gif'>В избранно`,
+      inFav:string  = `${prefixFv}${actFavPic}${postfix1}м`,
+      toFav:string  = `${prefixFv}${inActFavPic}${postfix1}е`,
+      startDiv:string  = "<div class=",
+      termDiv:string  = "</div>",
+      backArrowPic:string  = `<img class='talkBackArrow' src='img/talkBackArrow.gif'>`,
+      dateTimeFieldClass:string  = `${startDiv}'dateTimeField'>`,
+      dateTimeSepar:string  = "89162318y",
+      dateTimeSpace:number = 9;
+    let replyToName:string = "* unknown *",
+      userData:userPassportType = uBase[usrID["byCIDX"][IDX]],
+      hFC:string[] = [],
+      base:crBaseType = cBase,
+      bottomF:string = "bottomCommentF",
+      bFC:string[]  = [],
+      reply:boolean = false,
+      favItemOrder:number = 1;
 
+      function pushReplyTo ():void {
+             hFC.push(`${backArrowPic}`);
+             hFC.push(`${startDiv}'replyToName'>${replyToName}${termDiv}`);
+      };
+    if (baseType) {
+      reply = true;
+      base = rBase;
+      userData = uBase[usrID["byRIDX"][IDX]];
+      bottomF = "bottomReplyF";
+      favItemOrder = 0;
+      replyToName = uBase[usrID["byCIDX"][base[IDX]["tocIDX"]]]["name"];
+      if (!mobile376) {
+        pushReplyTo();
+      }
+    } else {
+      bFC.push(`${backArrowPic}Ответить`);
+    }
+    bFC.push(toFav);
+    hFC.unshift(userData["name"]);
+    hFC.push(`${dateTimeFieldClass}${base[IDX]["date"]}${termDiv}`);
+    hFC.push(dateTimeSepar);
+    hFC.push(`${dateTimeFieldClass}${base[IDX]["time"]}${termDiv}`);
+    /* Rating control block preforming */
+    const rateBlock0:string[] = [dec, (base[IDX]["rate"] as any) as string, inc];
+    let rateBlock:string[] = rateBlock0;
+    if (mobile376) {
+                    /* rateBlock = rateBlock0.toReversed(); */
+                    rateBlock = [];
+                    rateBlock0.forEach((item:string)=>{rateBlock.unshift(item)});
+      if (reply) {
+        pushReplyTo();
+      }
+    }
+    bFC = bFC.concat(rateBlock);
 
+    /*User Avatar Section*/
+    putDiv(
+      "userAvatarWrap",
+      baseForm,
+      2,
+      `<img src=${userData["imgSrc"]} class="userAvatar">`,
+    );
+    /*User Content Section Left Margin */
+    putDiv("userContentLMargin", baseForm);
+    /*User Content Section: Header (FIO, BackArrow Sign, Date, Time*/
+    const usrCntnt:HTMLDivElement = putDiv("userContent", baseForm);
+    /*User content section header container*/
+    const contentHeader:HTMLDivElement = putDiv("contentHeader", usrCntnt);
+    /*Header blocks building*/
+    /* hFC = [userData['name'],'1.BackArrow',replyToName,base[IDX]['date'],'*S*',base[IDX]['time']]; */
+    hFC.forEach((hFC:string, i:number) => {
+      let space:HTMLDivElement = putDiv(`headerF headerF${i}`, contentHeader, 2, hFC);
+      if (hFC === dateTimeSepar) {
+        space.style.width = dateTimeSpace + px;
+        space.innerHTML = "";
+      }
+    });
+    /*User Comment Textblock*/
+    putDiv("commentText", usrCntnt, 2, `${base[IDX]["text"]}`);
+    /*User content section bottom container*/
+    const contentBottom:HTMLDivElement = putDiv("contentBottom", usrCntnt);
+    /*Bottom blocks building*/
+    /* bFC = ['0.Reply',`${base[IDX]['fav']}`,`${base[IDX]['rate']}`]; */
 
-};
+    function rateClr (rateValue:number, elementStyle:CSSStyleDeclaration):void {
+      // set the comment/reply rate counter font color. 
+      // negative values rate - 'minusColor'; positive values with 'plusColor'
+      if (rateValue > 0) {
+        elementStyle.color = plusColor;
+      } else {
+        if (rateValue === 0) {
+          elementStyle.color = "";
+        } else {
+          elementStyle.color = minusColor;
+        }
+      }
+    };
+    let rateCtrlWrap:HTMLDivElement|null = null;
+    bFC.forEach((bFC:string, i:number) => {
+      let contentBottomF:HTMLDivElement|null = null;
+      if ((bFC === inc || bFC === dec) && !rateCtrlWrap) {
+        rateCtrlWrap = putDiv("rateCtrlWrap", contentBottom);
+      }
+      if (rateCtrlWrap) {
+        contentBottomF = putDiv(`rateCtrl`, rateCtrlWrap, 2, `${bFC}`);
+        if (mobile376) {
+          contentBottomF.style.margin = '0' + px;
+        }
+      } else {
+        contentBottomF = putDiv(
+          `bottomF ${bottomF}${i}`,
+          contentBottom,
+          2,
+          `${bFC}`,
+        );
+      }
+      // cBFs - auxiliary local constant
+      const cBFs:CSSStyleDeclaration = contentBottomF.style;
+      if (bFC === inc || bFC === dec) {
+        cBFs.borderRadius = "50%";
+        cBFs.backgroundColor = "rgb(230,230,230)";
+        if (bFC === inc) {
+          cBFs.color = plusColor;
+        } else {
+          cBFs.color = minusColor;
+        }
+        /* set + and - rating control wrap width equal to the height from CSS file */
+        const iHeight:string = (Math.floor(
+                contentBottomF.getBoundingClientRect().height) as any) as string;
+        cBFs.width = iHeight + px;
+
+        contentBottomF.addEventListener("click", (ev:MouseEvent) => {
+          if (ev.target instanceof HTMLDivElement) {
+            const bottomBlock:HTMLDivElement|null = ev.target.parentElement as HTMLDivElement,
+              rateDisplayEl:ChildNode|null = (bottomBlock.querySelector(".rateCtrl") as HTMLDivElement).nextSibling;
+            if (activeUser.allowToChangeRate(IDX, base)) {
+              if (ev.target.innerHTML === dec) {
+                base[IDX]["rate"]--;
+              } else {
+                base[IDX]["rate"]++;
+              }
+              rateClr(base[IDX]["rate"], (rateDisplayEl as HTMLDivElement).style);
+              baseToStor(base);
+              (rateDisplayEl as HTMLDivElement).innerHTML = (base[IDX]["rate"] as any) as string;
+            }
+        };
+        });
+      } else {
+        if (rateCtrlWrap) {
+          // rating counter style
+          cBFs.cursor = "default";
+          rateClr(base[IDX]["rate"], cBFs);
+          cBFs.fontWeight = "600";
+        }
+        contentBottomF.dataset.cIDX = (IDX as any) as string;
+        if (favItemOrder === i) {
+          if (reply) {
+            cBFs.marginLeft = "";
+          } else {
+            cBFs.marginLeft = 15 + px;
+          }
+          if (activeUser.findFav(IDX, base)) {
+            contentBottomF.innerHTML = inFav;
+          } else {
+            contentBottomF.innerHTML = toFav;
+          }
+
+          contentBottomF.addEventListener("click", (ev) => {
+            if (
+              activeUser.setFav(Number((parentElFind(ev) as HTMLDivElement).dataset.cIDX), base)
+            ) {
+              (contentBottomF as HTMLDivElement).innerHTML = inFav;
+              // parent comment switch to favorite
+              if (base === rBase) {
+                if (!activeUser.findFav(rBase[IDX]["tocIDX"])) {
+                  // comment block favorite display on
+                  const cmntFavFPool:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".bottomCommentF1");
+                  cmntFavFPool.forEach((i:HTMLDivElement) => {
+                    if (Number(i.dataset.cIDX) === rBase[IDX]["tocIDX"]) {
+                      i.innerHTML = inFav;
+                    }
+                  });
+                  activeUser.setFav(rBase[IDX]["tocIDX"]);
+                }
+              }
+            } else {
+              (contentBottomF as HTMLDivElement).innerHTML = toFav;
+              if (base === cBase) {
+                // reply blocks favorites displays off
+                const rplytFavFPool:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".bottomReplyF0");
+                rBase.forEach((i:rBaseItem, rIDX:number) => {
+                  if (i["tocIDX"] === IDX && activeUser.findFav(rIDX, rBase)) {
+                    activeUser.setFav(rIDX, rBase);
+                    // all replies favorites displays set off
+                    rplytFavFPool.forEach((replyFav) => {
+                      if (Number(replyFav.dataset.cIDX) === rIDX) {
+                        replyFav.innerHTML = toFav;
+                      }
+                    });
+                  }
+                });
+              }
+            }
+          });
+        }
+      } //bFC is not plus or minus (else end)
+    }); //bFC.forEach end
+  };
+
+};/* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {
     uBase = auxBase;
     script2();
