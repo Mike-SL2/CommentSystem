@@ -871,6 +871,7 @@ function script2() {
             // cBFs - auxiliary local constant
             var cBFs = contentBottomF.style;
             if (bFC === inc || bFC === dec) {
+                // bFC is plus or minus
                 cBFs.borderRadius = "50%";
                 cBFs.backgroundColor = "rgb(230,230,230)";
                 if (bFC === inc) {
@@ -901,6 +902,7 @@ function script2() {
                 });
             }
             else {
+                // bFC is not plus or minus
                 if (rateCtrlWrap) {
                     // rating counter style
                     cBFs.cursor = "default";
@@ -960,6 +962,18 @@ function script2() {
                 }
             } //bFC is not plus or minus (else end)
         }); //bFC.forEach end
+    }
+    ; // end of buildBlock procedure
+    /* get summarized space Hooper width for Reply block left margin (showReply())*/
+    function getSpHoopWidth(clasName) {
+        var className = '.' + clasName;
+        if (doc.querySelector(className)) {
+            return strToNum(getProp(doc.querySelector(className), "width"));
+        }
+        else {
+            return 0;
+        }
+        ;
     }
     ;
 }
