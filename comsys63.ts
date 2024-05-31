@@ -182,7 +182,7 @@ const auxBase:any = sTor("uBase");
 
 function script2():void  {
     /*	----	M A i N  	P R O C E D U R E 	----	*/
-    let spHoopWidth = sTor("spHoopWidth");
+    let spHoopWidth:number = (sTor("spHoopWidth") as any) as number;
     if (centeredWrap) {centeredWrap.style.display = "block";}
     /* user ID index base init */
     usrID = baseInit("usrID", function():usrIDType{
@@ -1018,6 +1018,28 @@ function getSpHoopWidth (clasName:string):number {
           return strToNum(getProp(doc.querySelector(className) as HTMLElement, "width"));
   } else {return 0}; 
   };
+
+  function showReply(frameElement:HTMLDivElement, rIDX:number):void {
+    putDiv("commentBlockSeparator", frameElement, 0);
+    const replyBlock:HTMLDivElement = putDiv("replyBlock", frameElement, 0),
+      spHoop:HTMLDivElement = putDiv("spHoop", replyBlock);
+    if (spHoopWidth===0) {
+      spHoopWidth =
+        getSpHoopWidth("userAvatarWrap") + getSpHoopWidth("userContentLMargin");
+      sTor("spHoopWidth", spHoopWidth);
+    }
+    spHoop.style.width = (spHoopWidth as any) as string + px;
+    frameElement.remove();
+    putDiv("vertMargin", replyBlock, 0);
+    const innerReplyBlock = putDiv("innerReplyBlock", replyBlock);
+    buildBlock(innerReplyBlock, rIDX, true);
+  };
+
+
+
+
+
+
 
 };/* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {

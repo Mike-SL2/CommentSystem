@@ -976,6 +976,21 @@ function script2() {
         ;
     }
     ;
+    function showReply(frameElement, rIDX) {
+        putDiv("commentBlockSeparator", frameElement, 0);
+        var replyBlock = putDiv("replyBlock", frameElement, 0), spHoop = putDiv("spHoop", replyBlock);
+        if (spHoopWidth === 0) {
+            spHoopWidth =
+                getSpHoopWidth("userAvatarWrap") + getSpHoopWidth("userContentLMargin");
+            sTor("spHoopWidth", spHoopWidth);
+        }
+        spHoop.style.width = spHoopWidth + px;
+        frameElement.remove();
+        putDiv("vertMargin", replyBlock, 0);
+        var innerReplyBlock = putDiv("innerReplyBlock", replyBlock);
+        buildBlock(innerReplyBlock, rIDX, true);
+    }
+    ;
 }
 ; /* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {
