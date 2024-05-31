@@ -1177,6 +1177,50 @@ function script2() {
         headerStyle.width = headerWidth;
     }
     ; // end of inputTextForm proc
+    function showComment(comIDX, krit, order) {
+        if (krit === void 0) { krit = null; }
+        if (order === void 0) { order = true; }
+        var replyForm, auxArray = [];
+        var prevCmntBlk = doc.querySelector(".commentBlock");
+        /*Comment Block Root Element*/
+        var emptyDiv = putDiv("commentBlockSeparator", prevCmntBlk, 0), commBlk = putDiv("commentBlock", emptyDiv, 0);
+        if (krit) {
+            rBase.forEach(function (reply, rIDX) {
+                if (reply["tocIDX"] === comIDX &&
+                    (!activeUser.showFavOnly() || activeUser.findFav(rIDX, rBase))) {
+                    auxArray.push({ reply: reply, rIDX: rIDX });
+                }
+            });
+            /* auxArray sorting */
+            switch (krit) {
+                case "rate":
+                    auxArray.sort(function (a, b) {
+                        return a["reply"]["rate"] - b["reply"]["rate"];
+                    });
+                    break;
+                case "date":
+                    auxArray.sort(function (a, b) {
+                        return (dateToNumber(a["reply"]["date"]) -
+                            dateToNumber(b["reply"]["date"]));
+                    });
+                    break;
+            }
+            /* reversing order */
+            if (order || krit === "answers")
+                auxArray.reverse();
+            /* auxArray output */
+            auxArray.forEach(function (i) {
+                replyForm = putDiv("replyForm", emptyDiv, 0);
+                showReply(replyForm, i["rIDX"]);
+            });
+        }
+        // remove the lowest separator
+        if (!prevCmntBlk) {
+            emptyDiv.remove();
+        }
+        buildBlock(commBlk, comIDX, false);
+    }
+    ; // end of showComment proc
 }
 ; /* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {

@@ -1247,6 +1247,53 @@ function getSpHoopWidth (clasName:string):number {
     headerStyle.width = headerWidth;
   };  // end of inputTextForm proc
 
+  function showComment(comIDX:number, krit:string|null = null, order:boolean = true):void {
+    let replyForm:HTMLDivElement,
+      auxArray:{reply: rBaseItem, rIDX: number }[] = [];
+    const prevCmntBlk:HTMLDivElement|null = doc.querySelector(".commentBlock");
+    /*Comment Block Root Element*/
+    const emptyDiv:HTMLDivElement = putDiv("commentBlockSeparator", prevCmntBlk, 0),
+      commBlk:HTMLDivElement = putDiv("commentBlock", emptyDiv, 0);
+    if (krit) {
+      rBase.forEach((reply:rBaseItem, rIDX:number) => {
+        if (
+          reply["tocIDX"] === comIDX &&
+          (!activeUser.showFavOnly() || activeUser.findFav(rIDX, rBase))
+        ) {
+          auxArray.push({ reply: reply, rIDX: rIDX });
+        }
+      });
+
+      /* auxArray sorting */
+      switch (krit) {
+        case "rate":
+          auxArray.sort(function (a, b) {
+            return a["reply"]["rate"] - b["reply"]["rate"];
+          });
+          break;
+        case "date":
+          auxArray.sort(function (a, b) {
+            return (
+              dateToNumber(a["reply"]["date"]) -
+              dateToNumber(b["reply"]["date"])
+            );
+          });
+          break;
+      }
+      /* reversing order */
+      if (order || krit === "answers") auxArray.reverse();
+      /* auxArray output */
+      auxArray.forEach((i:{reply: rBaseItem, rIDX: number }) => {
+        replyForm = putDiv("replyForm", emptyDiv, 0);
+        showReply(replyForm, i["rIDX"]);
+      });
+    }
+    // remove the lowest separator
+    if (!prevCmntBlk) {
+      emptyDiv.remove();
+    }
+    buildBlock(commBlk, comIDX, false);
+  };// end of showComment proc
 
 
 
