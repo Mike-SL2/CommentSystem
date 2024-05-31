@@ -991,6 +991,192 @@ function script2() {
         buildBlock(innerReplyBlock, rIDX, true);
     }
     ;
+    function inputTextForm(userName, orderNumber, dateTime, comIDX) {
+        if (dateTime === void 0) { dateTime = null; }
+        if (comIDX === void 0) { comIDX = null; }
+        var textLength = 0, maxLen = 0, allowComment = false, messageRecord, separ = null, headerWidth = '400' + px, sumWidth = 0;
+        var sumComponents = ["width", "padding-left", "padding-right"], senderID = usrID["byName"][userName] /* message length warning display colors */, tooLongMessage = "Слишком длинное сообщение", warningActiveClr = "#FF0000", inputYourText = "Введите здесь текст Вашего ", btnSndActiveClr = "black", buttonActiveBackgroundClr = "rgb(171,216,115)", firstComment = "Комментариев пока нет. Напишите здесь первый!", max1000chrsMessage = "\u041C\u0430\u043A\u0441. ".concat(maxTextLength, " \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432"), commBlocksArray = doc.querySelectorAll(".commentBlock"), prevRplyForms = container.querySelectorAll(".inputForm"), inputForm = putDiv("inputForm"), userData = uBase[usrID["byName"][userName]], inputFormAva = putDiv("userAvatarWrap", inputForm, 2, "<img src=".concat(userData["imgSrc"], " class=\"userAvatar\">")), inputFormContainer = putDiv("inputFormContainer", inputForm), inputFormHeader = putDiv("inputFormHeader", inputFormContainer), headerStyle = inputFormHeader.style, userNameField = putDiv("userNameField", inputFormHeader, 2, userName), warningField = putDiv("warningFWrap", inputFormHeader), warnFldStyle = warningField.style, symbCounter = putDiv("symbCounter", warningField), symbCntStyle = symbCounter.style, warningFieldText = putDiv("text", warningField, 2, max1000chrsMessage), inputFormMain = putDiv("inputFormMain", inputFormContainer), txtInput = doc.createElement("textarea"), txtInpInitRows = 2, txtInpStyle = txtInput.style;
+        var inpPlaceholderTxt = firstComment, refreshAfterSend = false;
+        txtInput.className = "textInput";
+        txtInput.name = "userInputText";
+        txtInpStyle.resize = "none";
+        txtInpStyle.overflowY = "hidden";
+        inputFormMain.appendChild(txtInput);
+        /* show symbol counter or warning message at inputFormHeader */
+        function showHeader(messageType) {
+            if (messageType === void 0) { messageType = null; }
+            if (messageType === "warning") {
+                symbCounter.innerHTML = "";
+                warningFieldText.innerHTML = max1000chrsMessage;
+            }
+            else {
+                symbCounter.innerHTML = "".concat(textLength, "/").concat(maxTextLength);
+            }
+            if (messageType === "counter") {
+                allowComment = true;
+                warningFieldText.innerHTML = "";
+            }
+            else {
+                allowComment = false;
+            }
+            if (messageType === null) {
+                warningFieldText.innerHTML = tooLongMessage;
+                warnFldStyle.fontStyle = normal;
+                symbCntStyle.color = warningActiveClr;
+                headerStyle.width = "";
+                warningFieldText.style.color = warningActiveClr;
+                symbCntStyle.marginRight = '50' + px;
+            }
+            else {
+                warnFldStyle.fontStyle = "";
+                symbCntStyle.color = "";
+                headerStyle.width = headerWidth;
+                warningFieldText.style.color = "";
+                symbCntStyle.marginRight = "";
+            }
+        }
+        ;
+        function txtInputViewReset(dontKeepValue) {
+            if (dontKeepValue === void 0) { dontKeepValue = true; }
+            var returnTxt = txtInput.value;
+            txtInput.rows = txtInpInitRows;
+            txtInpStyle.padding = "";
+            maxLen = 0;
+            if (dontKeepValue) {
+                txtInput.value = "";
+                textLength = 0;
+                showHeader("warning");
+            }
+            return returnTxt;
+        }
+        ;
+        var buttonSend = putBtn("formSendBtn", inputFormMain, "Отправить", function () {
+            // Get real Date and Time if no Date and Time specified
+            if (!dateTime) {
+                dateTime = getDateTime();
+            }
+            /* allow to place comment or reply if the comment text length is smaller than the maxTextLength value
+             and the input field contains at least one character (i.e. textLength variable value is greater than zero */
+            if (allowComment) {
+                if (comIDX === null) {
+                    /* comment form send button reaction */
+                    activeUser.placeComment(txtInputViewReset());
+                    // if no comment blocks on display, switch to display all blocks (not fav only) and
+                    // rebuild all blocks to set comment block under the main input form
+                    if (refreshAfterSend || (!favPresent() && activeUser.showFavOnly())) {
+                        underLineSwitch(commntsAmount);
+                        refreshAfterSend = false;
+                    }
+                    buildReplyButtonsHandlers();
+                }
+                else {
+                    /* reply form send button reaction */
+                    messageRecord = {
+                        toCIDX: comIDX,
+                        text: txtInputViewReset(),
+                        rate: 0,
+                        date: dateTime["date"],
+                        time: dateTime["time"],
+                    };
+                    cBase[comIDX]["answers"]++;
+                    baseToStor(cBase);
+                    usrID["byRIDX"].push(senderID);
+                    baseToStor(usrID);
+                    rBase.push(messageRecord);
+                    baseToStor(rBase);
+                    showReply(inputForm, rBase.length - 1);
+                }
+            }
+            buttonSendActive();
+        });
+        var btnSndStyle = buttonSend.style;
+        function buttonSendActive(state) {
+            if (state === void 0) { state = false; }
+            if (state) {
+                btnSndStyle.color = btnSndActiveClr;
+                btnSndStyle.backgroundColor = buttonActiveBackgroundClr;
+            }
+            else {
+                btnSndStyle.color = "";
+                btnSndStyle.backgroundColor = "";
+            }
+        }
+        ;
+        txtInput.addEventListener("input", function () {
+            textLength = txtInput.value.length;
+            if (txtInput.scrollTop) {
+                txtInpStyle.paddingTop = '20' + px;
+                txtInpStyle.paddingBottom = '20' + px;
+                if (maxLen === 0) {
+                    maxLen = Math.floor((textLength - 1) / txtInpInitRows);
+                }
+            }
+            if (maxLen > 0) {
+                txtInput.rows = Math.floor(textLength / maxLen) + txtInpInitRows - 1;
+            }
+            if (txtInput.rows < txtInpInitRows) {
+                txtInputViewReset(false);
+                btnSndStyle.alignSelf = "";
+            }
+            if (txtInput.rows > txtInpInitRows) {
+                btnSndStyle.alignSelf = "flex-start";
+            }
+            if (textLength > maxTextLength) {
+                showHeader();
+                buttonSendActive();
+            }
+            else {
+                {
+                    if (textLength) {
+                        buttonSendActive(true);
+                        showHeader("counter");
+                    }
+                    else {
+                        showHeader("warning");
+                        buttonSendActive();
+                    }
+                }
+            }
+        });
+        if (comIDX === null) {
+            /* comment form building */
+            if (doc.querySelector(".commentBlock")) {
+                separ = putDiv("commentBlockSeparator");
+                centeredWrap.insertBefore(separ, container);
+            }
+            else {
+                // if no comment blocks on display set 'refreshAfterSend' to true
+                refreshAfterSend = true;
+            }
+            if (cBase.length) {
+                inpPlaceholderTxt = inputYourText + "комментария";
+            }
+            centeredWrap.insertBefore(inputForm, separ);
+        }
+        else {
+            /* previous _EMPTY_ reply forms removing to escape _EMPTY_ reply forms dubbing */
+            prevRplyForms.forEach(function (i) {
+                if (i.querySelector(".textInput") != null) {
+                    if (i.querySelector(".textInput").value === '') {
+                        i.remove();
+                    }
+                }
+            });
+            /* reply form building */
+            inpPlaceholderTxt = inputYourText + "ответа";
+            commBlocksArray[orderNumber].insertAdjacentElement("afterend", inputForm);
+            txtInput.focus();
+        }
+        txtInput.placeholder = inpPlaceholderTxt + ".";
+        //inputFormHeader width calculation
+        sumComponents.forEach(function (componentWidth) {
+            sumWidth = sumWidth + strToNum(getProp(txtInput, componentWidth));
+        });
+        sumWidth = sumWidth - strToNum(getProp(txtInput, "margin-left"));
+        headerWidth = sumWidth + px;
+        headerStyle.width = headerWidth;
+    }
+    ; // end of inputTextForm proc
 }
 ; /* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {

@@ -1034,7 +1034,218 @@ function getSpHoopWidth (clasName:string):number {
     const innerReplyBlock = putDiv("innerReplyBlock", replyBlock);
     buildBlock(innerReplyBlock, rIDX, true);
   };
+  function inputTextForm (userName:string,orderNumber:number, dateTime:dateTimeObject|null = null, comIDX:number|null = null,
+  ):void {
+    let textLength:number = 0,
+      maxLen:number= 0,
+      allowComment = false,
+      messageRecord:cBaseItem|rBaseItem,
+      separ:HTMLDivElement|null = null,
+      headerWidth:string = '400' + px,
+      sumWidth:number = 0;
 
+    const sumComponents:Array<string> = ["width", "padding-left", "padding-right"],
+      senderID:number =
+        usrID["byName"][userName] /* message length warning display colors */,
+      tooLongMessage:string = "Слишком длинное сообщение",
+      warningActiveClr:string = "#FF0000",
+      inputYourText:string = "Введите здесь текст Вашего ",
+      btnSndActiveClr:string = "black",
+      buttonActiveBackgroundClr:string = "rgb(171,216,115)",
+      firstComment:string = "Комментариев пока нет. Напишите здесь первый!",
+      max1000chrsMessage:string = `Макс. ${(maxTextLength as any) as string} символов`,
+      commBlocksArray:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".commentBlock"),
+      prevRplyForms:NodeListOf<HTMLDivElement>  = container.querySelectorAll(".inputForm"),
+      inputForm:HTMLDivElement = putDiv("inputForm"),
+      userData:userPassportType = uBase[usrID["byName"][userName]],
+      inputFormAva:HTMLDivElement = putDiv(
+        "userAvatarWrap",
+        inputForm,
+        2,
+        `<img src=${userData["imgSrc"]} class="userAvatar">`,
+      ),
+      inputFormContainer:HTMLDivElement = putDiv("inputFormContainer", inputForm),
+      inputFormHeader:HTMLDivElement = putDiv("inputFormHeader", inputFormContainer),
+      headerStyle:CSSStyleDeclaration = inputFormHeader.style,
+      userNameField:HTMLDivElement = putDiv("userNameField", inputFormHeader, 2, userName),
+      warningField:HTMLDivElement = putDiv("warningFWrap", inputFormHeader),
+      warnFldStyle:CSSStyleDeclaration = warningField.style,
+      symbCounter:HTMLDivElement = putDiv("symbCounter", warningField),
+      symbCntStyle:CSSStyleDeclaration = symbCounter.style,
+      warningFieldText:HTMLDivElement = putDiv("text", warningField, 2, max1000chrsMessage),
+      inputFormMain:HTMLDivElement = putDiv("inputFormMain", inputFormContainer),
+      txtInput:HTMLTextAreaElement = doc.createElement("textarea"),
+      txtInpInitRows:number = 2,
+      txtInpStyle:CSSStyleDeclaration  = txtInput.style;
+    let inpPlaceholderTxt:string = firstComment,
+      refreshAfterSend:boolean = false;
+    txtInput.className = "textInput";
+    txtInput.name = "userInputText";
+    txtInpStyle.resize = "none";
+    txtInpStyle.overflowY = "hidden";
+    inputFormMain.appendChild(txtInput);
+
+    /* show symbol counter or warning message at inputFormHeader */
+    function showHeader (messageType:string|null = null):void {
+      if (messageType === "warning") {
+        symbCounter.innerHTML = "";
+        warningFieldText.innerHTML = max1000chrsMessage;
+      } else {
+        symbCounter.innerHTML = `${(textLength as any) as string}/${(maxTextLength as any) as string}`;
+      }
+      if (messageType === "counter") {
+        allowComment = true;
+        warningFieldText.innerHTML = "";
+      } else {
+        allowComment = false;
+      }
+      if (messageType === null) {
+        warningFieldText.innerHTML = tooLongMessage;
+        warnFldStyle.fontStyle = normal;
+        symbCntStyle.color = warningActiveClr;
+        headerStyle.width = "";
+        warningFieldText.style.color = warningActiveClr;
+        symbCntStyle.marginRight = '50' + px;
+      } else {
+        warnFldStyle.fontStyle = "";
+        symbCntStyle.color = "";
+        headerStyle.width = headerWidth;
+        warningFieldText.style.color = "";
+        symbCntStyle.marginRight = "";
+      }
+    };
+    function txtInputViewReset(dontKeepValue:boolean = true):string  {
+      const returnTxt:string = txtInput.value;
+      txtInput.rows = txtInpInitRows;
+      txtInpStyle.padding = "";
+      maxLen = 0;
+      if (dontKeepValue) {
+        txtInput.value = "";
+        textLength = 0;
+        showHeader("warning");
+      }
+      return returnTxt;
+    };
+
+    const buttonSend:HTMLButtonElement = putBtn("formSendBtn", inputFormMain, "Отправить", () => {
+      // Get real Date and Time if no Date and Time specified
+      if (!dateTime) {
+        dateTime = getDateTime();
+      }
+      /* allow to place comment or reply if the comment text length is smaller than the maxTextLength value 
+	   and the input field contains at least one character (i.e. textLength variable value is greater than zero */
+      if (allowComment) {
+        if (comIDX === null) {
+          /* comment form send button reaction */
+          activeUser.placeComment(txtInputViewReset());
+          // if no comment blocks on display, switch to display all blocks (not fav only) and
+          // rebuild all blocks to set comment block under the main input form
+          if (refreshAfterSend || (!favPresent() && activeUser.showFavOnly())) {
+            underLineSwitch(commntsAmount);
+            refreshAfterSend = false;
+          }
+          buildReplyButtonsHandlers();
+        } else {
+          /* reply form send button reaction */
+          messageRecord = {
+            toCIDX: comIDX,
+            text: txtInputViewReset(),
+            rate: 0,
+            date: dateTime["date"],
+            time: dateTime["time"],
+          };
+          cBase[comIDX]["answers"]++;
+          baseToStor(cBase);
+          usrID["byRIDX"].push(senderID);
+          baseToStor(usrID);
+          rBase.push(messageRecord);
+          baseToStor(rBase);
+          showReply(inputForm, rBase.length - 1);
+        }
+      }
+      buttonSendActive();
+    });
+    const btnSndStyle:CSSStyleDeclaration = buttonSend.style;
+
+    function buttonSendActive (state:boolean = false):void {
+      if (state) {
+        btnSndStyle.color = btnSndActiveClr;
+        btnSndStyle.backgroundColor = buttonActiveBackgroundClr;
+      } else {
+        btnSndStyle.color = "";
+        btnSndStyle.backgroundColor = "";
+      }
+    };
+    txtInput.addEventListener("input", () => {
+      textLength = txtInput.value.length;
+      if (txtInput.scrollTop) {
+        txtInpStyle.paddingTop = '20' + px;
+        txtInpStyle.paddingBottom = '20' + px;
+        if (maxLen===0) {
+          maxLen = Math.floor((textLength - 1) / txtInpInitRows);
+        }
+      }
+      if (maxLen>0) {
+        txtInput.rows = Math.floor(textLength / maxLen) + txtInpInitRows - 1;
+      }
+      if (txtInput.rows < txtInpInitRows) {
+        txtInputViewReset(false);
+        btnSndStyle.alignSelf = "";
+      }
+      if (txtInput.rows > txtInpInitRows) {
+        btnSndStyle.alignSelf = "flex-start";
+      }
+
+      if (textLength > maxTextLength) {
+        showHeader();
+        buttonSendActive();
+      } else {
+        {
+          if (textLength) {
+            buttonSendActive(true);
+            showHeader("counter");
+          } else {
+            showHeader("warning");
+            buttonSendActive();
+          }
+        }
+      }
+    });
+    if (comIDX === null) {
+      /* comment form building */
+      if (doc.querySelector(".commentBlock")) {
+        separ = putDiv("commentBlockSeparator");
+        centeredWrap.insertBefore(separ, container);
+      } else {
+        // if no comment blocks on display set 'refreshAfterSend' to true
+        refreshAfterSend = true;
+      }
+      if (cBase.length) {
+        inpPlaceholderTxt = inputYourText + "комментария";
+      }
+      centeredWrap.insertBefore(inputForm, separ);
+    } else {
+      /* previous _EMPTY_ reply forms removing to escape _EMPTY_ reply forms dubbing */
+      prevRplyForms.forEach((i:HTMLDivElement) => {
+        if (i.querySelector(".textInput")!=null){
+        if ((i.querySelector(".textInput") as HTMLTextAreaElement).value==='') {
+          i.remove();
+        }}
+      });
+      /* reply form building */
+      inpPlaceholderTxt = inputYourText + "ответа";
+      commBlocksArray[orderNumber].insertAdjacentElement("afterend", inputForm);
+      txtInput.focus();
+    }
+    txtInput.placeholder = inpPlaceholderTxt + ".";
+    //inputFormHeader width calculation
+    sumComponents.forEach((componentWidth) => {
+      sumWidth = sumWidth + strToNum(getProp(txtInput, componentWidth));
+    });
+    sumWidth = sumWidth - strToNum(getProp(txtInput, "margin-left"));
+    headerWidth = sumWidth + px;
+    headerStyle.width = headerWidth;
+  };  // end of inputTextForm proc
 
 
 
