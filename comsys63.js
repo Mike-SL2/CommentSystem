@@ -1221,6 +1221,51 @@ function script2() {
         buildBlock(commBlk, comIDX, false);
     }
     ; // end of showComment proc
+    /* --------------------------------- Test/Init/User login section ---------------------------- */
+    /* Test comments */
+    function testComments() {
+        if (sTor("testPass") === null) {
+            var comusr = " тестовый комментарий пользователя ";
+            user[0].placeComment("\u041F\u0435\u0440\u0432\u044B\u0439".concat(comusr).concat(uBase[0]["name"]));
+            user[0].placeComment("\u0412\u0442\u043E\u0440\u043E\u0439".concat(comusr).concat(uBase[0]["name"]));
+            user[0].placeComment("\u0422\u0440\u0435\u0442\u0438\u0439".concat(comusr).concat(uBase[0]["name"]));
+            user[1].placeComment("\u041F\u0435\u0440\u0432\u044B\u0439".concat(comusr).concat(uBase[1]["name"]));
+            user[1].placeComment("\u0412\u0442\u043E\u0440\u043E\u0439".concat(comusr).concat(uBase[1]["name"]));
+            user[2].placeComment("\u041F\u0435\u0440\u0432\u044B\u0439".concat(comusr).concat(uBase[2]["name"]));
+            user[2].placeComment("\u0412\u0442\u043E\u0440\u043E\u0439".concat(comusr).concat(uBase[2]["name"]));
+            user[0].placeComment("\u0427\u0435\u0442\u0432\u0451\u0440\u0442\u044B\u0439".concat(comusr).concat(uBase[0]["name"]));
+            user[1].placeComment("\u0422\u0440\u0435\u0442\u0438\u0439".concat(comusr).concat(uBase[1]["name"]));
+            user[3].placeComment("\u041F\u0435\u0440\u0432\u044B\u0439".concat(comusr).concat(uBase[3]["name"], " - idx 10 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+            buildReplyButtonsHandlers();
+            sTor("testPass", true);
+        }
+    }
+    ;
+    testComments();
+    /* active user selector control block related */
+    function displayActiveUserName(userNumber) {
+        var text = "\u0410\u043A\u0442\u0438\u0432\u0435\u043D \u043F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C: ".concat(uBase[userNumber]["name"], " (userID ").concat(userNumber, ") *(v.").concat(ver, ")"), nameField = doc.querySelector(".nameField"), textLen = text.length + ver.length + 1, eventBtns1 = doc.querySelectorAll(".eventBtn1");
+        eventBtns1.forEach(function (i, n) {
+            var iSt = i.style;
+            if (n === userNumber) {
+                iSt.boxShadow = "0px 0px 3px 2px yellow";
+                iSt.background = "greenyellow";
+                iSt.borderColor = "lime";
+                iSt.fontWeight = "700";
+            }
+            else {
+                iSt.boxShadow = "0px 0px 0px 0px";
+                iSt.background = "limegreen";
+                iSt.borderColor = "black";
+                iSt.fontWeight = "400";
+            }
+        });
+        if (nameField) {
+            nameField.style.width = textLen + "ch";
+            nameField.innerHTML = text;
+        }
+    }
+    ; //  end of  displayActiveUserName proc
 }
 ; /* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {

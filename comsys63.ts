@@ -1294,8 +1294,54 @@ function getSpHoopWidth (clasName:string):number {
     }
     buildBlock(commBlk, comIDX, false);
   };// end of showComment proc
+/* --------------------------------- Test/Init/User login section ---------------------------- */
+  /* Test comments */
+  function testComments ():void{
+  if (sTor("testPass")===null) {     
+    const comusr:string = " тестовый комментарий пользователя ";
+    user[0].placeComment(`Первый${comusr}${uBase[0]["name"]}`);
+    user[0].placeComment(`Второй${comusr}${uBase[0]["name"]}`);
+    user[0].placeComment(`Третий${comusr}${uBase[0]["name"]}`);
+    user[1].placeComment(`Первый${comusr}${uBase[1]["name"]}`);
+    user[1].placeComment(`Второй${comusr}${uBase[1]["name"]}`);
+    user[2].placeComment(`Первый${comusr}${uBase[2]["name"]}`);
+    user[2].placeComment(`Второй${comusr}${uBase[2]["name"]}`);
+    user[0].placeComment(`Четвёртый${comusr}${uBase[0]["name"]}`);
+    user[1].placeComment(`Третий${comusr}${uBase[1]["name"]}`);
+    user[3].placeComment(
+      `Первый${comusr}${uBase[3]["name"]} - idx 10 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA`,
+    );
+    buildReplyButtonsHandlers();
+    sTor("testPass", true);
+  }
+  };
+  testComments();
 
-
+/* active user selector control block related */
+function displayActiveUserName (userNumber:number):void {
+  const text:string = `Активен пользователь: ${uBase[userNumber]["name"]} (userID ${userNumber}) *(v.${ver})`,
+    nameField:HTMLDivElement = doc.querySelector(".nameField") as HTMLDivElement,
+    textLen:number = text.length + ((ver as any) as string).length + 1,
+    eventBtns1:NodeListOf<HTMLButtonElement> = doc.querySelectorAll(".eventBtn1");
+  eventBtns1.forEach((i:HTMLButtonElement, n:number) => {
+    const iSt:CSSStyleDeclaration = i.style;
+    if (n === userNumber) {
+      iSt.boxShadow = "0px 0px 3px 2px yellow";
+      iSt.background = "greenyellow";
+      iSt.borderColor = "lime";
+      iSt.fontWeight = "700";
+    } else {
+      iSt.boxShadow = "0px 0px 0px 0px";
+      iSt.background = "limegreen";
+      iSt.borderColor = "black";
+      iSt.fontWeight = "400";
+    }
+  });
+  if (nameField) {
+    nameField.style.width = textLen + "ch";
+    nameField.innerHTML = text;
+  }
+};//  end of  displayActiveUserName proc
 
 
 
