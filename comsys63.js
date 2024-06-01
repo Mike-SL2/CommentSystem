@@ -273,7 +273,6 @@ function script2() {
         Comment.prototype.placeReply = function (comIDX, orderNumber) { };
         Comment.prototype.allowToChangeRate = function (IDX, base) { return false; };
         Comment.prototype.showFavOnly = function (state) {
-            if (state === void 0) { state = false; }
             switch (state) {
                 case true:
                     this.showFavoritesOnly = true;
@@ -367,7 +366,7 @@ function script2() {
             if (sortCriteria === void 0) { sortCriteria = null; }
             if (reverse === void 0) { reverse = false; }
             var ordPic = doc.querySelector(".ordPic"), ordPicStl = ordPic.style;
-            var vShift = Math.round(Number(ordPicStl.height.slice(0, 2)) * 2), shiftSign = "", angle = 45;
+            var vShift = Math.round(Number(ordPicStl.height.slice(0, 2)) * 2), shiftSign = "", angle = '45';
             if (sortCriteria === null) {
                 if (this.uSort["sortCriteria"] === null) {
                     sortCriteria = defaultSortMenuItemNumber;
@@ -387,7 +386,7 @@ function script2() {
             }
             rebuildAll(menuSort[sortCriteria]["krit"], this.uSort["sortOrder"]);
             if (this.uSort["sortOrder"]) {
-                angle = -135;
+                angle = '-135';
                 shiftSign = "-";
                 vShift += 15;
             }
@@ -595,9 +594,15 @@ function script2() {
     }
     ;
     function getProp(DomElement, propertyName) {
-        return window
-            .getComputedStyle(DomElement, null)
-            .getPropertyValue(propertyName);
+        if (DomElement instanceof HTMLElement) {
+            return window
+                .getComputedStyle(DomElement, null)
+                .getPropertyValue(propertyName);
+        }
+        else {
+            return '';
+        }
+        ;
     }
     ;
     function putDiv(className, baseForm, mode, innerContent) {
@@ -776,7 +781,7 @@ function script2() {
     ;
     function buildBlock(baseForm, IDX, baseType) {
         if (baseType === void 0) { baseType = false; }
-        var prefixFv = "<img class='cmntFavFild' src='img/heart", postfix1 = ".gif'>\u0412 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E", inFav = "".concat(prefixFv).concat(actFavPic).concat(postfix1, "\u043C"), toFav = "".concat(prefixFv).concat(inActFavPic).concat(postfix1, "\u0435"), startDiv = "<div class=", termDiv = "</div>", backArrowPic = "<img class='talkBackArrow' src='img/talkBackArrow.gif'>", dateTimeFieldClass = "".concat(startDiv, "'dateTimeField'>"), dateTimeSepar = "89162318y", dateTimeSpace = 9;
+        var prefixFv = "<img class='cmntFavFild' src='img/heart", postfix1 = ".gif'>\u0412 \u0438\u0437\u0431\u0440\u0430\u043D\u043D\u043E", inFav = "".concat(prefixFv).concat(actFavPic).concat(postfix1, "\u043C"), toFav = "".concat(prefixFv).concat(inActFavPic).concat(postfix1, "\u0435"), startDiv = "<div class=", termDiv = "</div>", backArrowPic = "<img class='talkBackArrow' src='img/talkBackArrow.gif'>", dateTimeFieldClass = "".concat(startDiv, "'dateTimeField'>"), dateTimeSepar = "89162318y", dateTimeSpace = '9';
         var replyToName = "* unknown *", userData = uBase[usrID["byCIDX"][IDX]], hFC = [], base = cBase, bottomF = "bottomCommentF", bFC = [], reply = false, favItemOrder = 1;
         function pushReplyTo() {
             hFC.push("".concat(backArrowPic));
@@ -789,7 +794,7 @@ function script2() {
             userData = uBase[usrID["byRIDX"][IDX]];
             bottomF = "bottomReplyF";
             favItemOrder = 0;
-            replyToName = uBase[usrID["byCIDX"][base[IDX]["tocIDX"]]]["name"];
+            replyToName = uBase[usrID["byCIDX"][base[IDX]["toCIDX"]]]["name"];
             if (!mobile376) {
                 pushReplyTo();
             }
@@ -915,7 +920,7 @@ function script2() {
                         cBFs.marginLeft = "";
                     }
                     else {
-                        cBFs.marginLeft = 15 + px;
+                        cBFs.marginLeft = '15' + px;
                     }
                     if (activeUser.findFav(IDX, base)) {
                         contentBottomF.innerHTML = inFav;
@@ -928,15 +933,15 @@ function script2() {
                             contentBottomF.innerHTML = inFav;
                             // parent comment switch to favorite
                             if (base === rBase) {
-                                if (!activeUser.findFav(rBase[IDX]["tocIDX"])) {
+                                if (!activeUser.findFav(rBase[IDX]["toCIDX"])) {
                                     // comment block favorite display on
                                     var cmntFavFPool = doc.querySelectorAll(".bottomCommentF1");
                                     cmntFavFPool.forEach(function (i) {
-                                        if (Number(i.dataset.cIDX) === rBase[IDX]["tocIDX"]) {
+                                        if (Number(i.dataset.cIDX) === rBase[IDX]["toCIDX"]) {
                                             i.innerHTML = inFav;
                                         }
                                     });
-                                    activeUser.setFav(rBase[IDX]["tocIDX"]);
+                                    activeUser.setFav(rBase[IDX]["toCIDX"]);
                                 }
                             }
                         }
@@ -946,7 +951,7 @@ function script2() {
                                 // reply blocks favorites displays off
                                 var rplytFavFPool_1 = doc.querySelectorAll(".bottomReplyF0");
                                 rBase.forEach(function (i, rIDX) {
-                                    if (i["tocIDX"] === IDX && activeUser.findFav(rIDX, rBase)) {
+                                    if (i["toCIDX"] === IDX && activeUser.findFav(rIDX, rBase)) {
                                         activeUser.setFav(rIDX, rBase);
                                         // all replies favorites displays set off
                                         rplytFavFPool_1.forEach(function (replyFav) {
@@ -979,11 +984,12 @@ function script2() {
     function showReply(frameElement, rIDX) {
         putDiv("commentBlockSeparator", frameElement, 0);
         var replyBlock = putDiv("replyBlock", frameElement, 0), spHoop = putDiv("spHoop", replyBlock);
-        if (spHoopWidth === 0) {
+        if (spHoopWidth === null) {
             spHoopWidth =
-                getSpHoopWidth("userAvatarWrap") + getSpHoopWidth("userContentLMargin");
+                (getSpHoopWidth("userAvatarWrap") + getSpHoopWidth("userContentLMargin"));
             sTor("spHoopWidth", spHoopWidth);
         }
+        ;
         spHoop.style.width = spHoopWidth + px;
         frameElement.remove();
         putDiv("vertMargin", replyBlock, 0);
@@ -1186,7 +1192,7 @@ function script2() {
         var emptyDiv = putDiv("commentBlockSeparator", prevCmntBlk, 0), commBlk = putDiv("commentBlock", emptyDiv, 0);
         if (krit) {
             rBase.forEach(function (reply, rIDX) {
-                if (reply["tocIDX"] === comIDX &&
+                if (reply["toCIDX"] === comIDX &&
                     (!activeUser.showFavOnly() || activeUser.findFav(rIDX, rBase))) {
                     auxArray.push({ reply: reply, rIDX: rIDX });
                 }
@@ -1266,6 +1272,75 @@ function script2() {
         }
     }
     ; //  end of  displayActiveUserName proc
+    /* active user selector control block build */
+    function buildUserSelector() {
+        var lastButton;
+        // previous selector block removing
+        var prevUsrSlct = doc.querySelector(".usrSelector");
+        if (prevUsrSlct) {
+            prevUsrSlct.remove();
+            doc.querySelector("br").remove();
+        }
+        var firstDiv = doc.querySelector("div"), usrSlct = putDiv("usrSelector"), usrSlctStyl = usrSlct.style, 
+        // 
+        selectorLeftMargin = strToNum(getProp(centeredWrap, "margin-left")), nameField = putDiv("nameField", usrSlct), cr = doc.createElement("br"), nFldStyl = nameField.style;
+        usrSlctStyl.display = "inline-flex";
+        usrSlctStyl.padding = "2px";
+        usrSlctStyl.flexFlow = "row wrap";
+        usrSlctStyl.marginLeft = selectorLeftMargin + px;
+        usrSlctStyl.border = "1px solid lime";
+        usrSlctStyl.boxShadow = "5px 5px 0px 0px lightgray";
+        if (mobile376) {
+            usrSlctStyl.width = (widthBrkPnt - 7) + px;
+        }
+        nFldStyl.textAlign = "center";
+        nFldStyl.padding = "5px 8px 5px 8px";
+        nFldStyl.background = "mistyrose";
+        doc.body.insertBefore(cr, firstDiv);
+        doc.body.insertBefore(usrSlct, cr);
+        /* user switch buttons with handlers */
+        var uBaseLengthAux = uBase.length - 1;
+        uBase.forEach(function (i, n) {
+            lastButton = putBtn("eventBtn1", usrSlct, i["name"], function () {
+                displayActiveUserName(newUserLogIn(i["name"]));
+            });
+            lastButton.style.margin = "3px 10px 3px 0px";
+            if (n === uBaseLengthAux) {
+                lastButton.insertAdjacentElement("afterend", nameField);
+            }
+        });
+    }
+    ; // end of active user selector control block building ('buildUserSelector' procedure)
+    /* user login procedure */
+    function newUserLogIn(userName) {
+        var userNumber = usrID["byName"][userName];
+        commntsAmount.innerHTML = "\u041A\u043E\u043C\u043C\u0435\u043D\u0442\u0430\u0440\u0438\u0438 <span class='commentsQuantity'>(".concat(cBase.length, ")</span>");
+        checkWidth();
+        activeUser = user[userNumber];
+        heartSwitch();
+        if (activeUser.showFavOnly()) {
+            underLineSwitch(favControl);
+        }
+        else {
+            underLineSwitch(commntsAmount);
+        }
+        return userNumber;
+    }
+    ;
+    function pageInit() {
+        var userNumber = newUserLogIn(activeUser.getName); //to show main comment form at page start/refresh
+        buildUserSelector();
+        displayActiveUserName(userNumber);
+        // set name field top margin on selector height > 30 px
+        var blkWidth = getProp(doc.querySelector(".usrSelector"), "height");
+        if (strToNum(blkWidth) > 30) {
+            doc.querySelector(".nameField").style.marginTop = '10' + px;
+        }
+    }
+    ;
+    pageInit();
+    /* rebuild comments blocks at screen size change */
+    window.onresize = pageInit;
 }
 ; /* end of 		----	M A i N  	P R O C E D U R E 	----	*/
 if (auxBase) {

@@ -12,7 +12,9 @@ type usrIDType = {byCIDX:number[],byRIDX:number[],byName:{[key:string]:number}};
 type menuSortItem = {text:string, krit:string};
 type menuSortType = menuSortItem [];
 type nStr = string|null;
-type dateTimeObject = {date:string,time:string};  
+type dateTimeObject = {date:string,time:string};
+type functionPoolItemType = {node: HTMLDivElement, func: (event:MouseEvent)=>void};  
+type  buttonFunctionType = ()=>void;
 let uBase:userBaseType = [
   { name: "Андрей", imgSrc: "img/a.jpg" } /*	uBase[0]	*/,
 
@@ -29,14 +31,14 @@ let uBase:userBaseType = [
   rBase:rBaseType,
   mobile376:boolean = false,
   auxMockDateTime:dateTimeObject, // to store the previous function mockDateTime return value
-  funcPool:{ node: HTMLDivElement, func: Function }[] = []; // to store event handlers functions pool, only for 'buildReplyButtonsHandlers'
+  funcPool:functionPoolItemType[] = []; // to store event handlers functions pool, only for 'buildReplyButtonsHandlers'
+ 
 const doc:Document = document,
   px:string = "px",
   requestString:string = "https://randomuser.me/api/",
   normal:string = "normal",
   ver:number = 631,
-  minusColor:string = "red",
-  plusColor:string = "rgb(138,197,64)",
+  minusColor:string = "red",  plusColor:string = "rgb(138,197,64)",
   dec:string = "-",
   inc:string = "+",
   messageWrap:HTMLDivElement = doc.createElement("div"),
@@ -178,11 +180,11 @@ function baseInit (keyName:string, cbFunction:Function):any{
   };
 
   /* load previous users base from storage */
-const auxBase:any = sTor("uBase");
+const auxBase:userBaseType|null = sTor("uBase");
 
 function script2():void  {
     /*	----	M A i N  	P R O C E D U R E 	----	*/
-    let spHoopWidth:number = (sTor("spHoopWidth") as any) as number;
+    let spHoopWidth:number|null = sTor("spHoopWidth");
     if (centeredWrap) {centeredWrap.style.display = "block";}
     /* user ID index base init */
     usrID = baseInit("usrID", function():usrIDType{
@@ -309,7 +311,7 @@ class Comment {
   placeComment(commentText:string):void {}
   placeReply(comIDX:number, orderNumber:number):void {}
   allowToChangeRate(IDX:number, base:cBaseType|rBaseType):boolean {return false;}
-  showFavOnly(state:boolean = false) {
+  showFavOnly(state?:boolean) {
     switch (state) {
       case true:
         this.showFavoritesOnly = true;
@@ -391,9 +393,9 @@ class User extends Comment {
   rebuildComments(sortCriteria:null|number = null, reverse:boolean = false) {
     const ordPic:HTMLDivElement = doc.querySelector(".ordPic") as  HTMLDivElement,
       ordPicStl:CSSStyleDeclaration = (ordPic as HTMLElement).style;
-    let vShift:number = Math.round(Number(ordPicStl.height.slice(0, 2)) * 2),
+    let vShift:number =Math.round(Number(ordPicStl.height.slice(0, 2)) * 2),
       shiftSign:string = "",
-      angle:number = 45;
+      angle:string = '45';
     if (sortCriteria === null) {
       if (this.uSort["sortCriteria"] === null) {
         sortCriteria = defaultSortMenuItemNumber;
@@ -414,12 +416,12 @@ class User extends Comment {
 
     rebuildAll(menuSort[sortCriteria]["krit"], this.uSort["sortOrder"]);
     if (this.uSort["sortOrder"]) {
-      angle = -135;
+      angle = '-135';
       shiftSign = "-";
       vShift += 15;
     }
     ordPicStl.rotate = `${angle}deg`;
-    ordPicStl.translate = `0px ${shiftSign}${vShift}%`;
+    ordPicStl.translate = `0px ${shiftSign}${(vShift as any) as string}%`;
     this.uSort["sortCriteria"] = sortCriteria;
     sTor(`uSort-${this.user}`, this.uSort);
   }
@@ -510,14 +512,14 @@ function parentElFind (event:MouseEvent):HTMLDivElement|EventTarget|null{
 };
 function buildReplyButtonsHandlers ():void {
   /* old handlers removing */
-  funcPool.forEach((arg) => {
-    arg["node"].removeEventListener("click", arg["func"] as any);
+  funcPool.forEach((arg:functionPoolItemType) => {
+    arg["node"].removeEventListener("click", arg["func"]);
   });
   funcPool = [];
   /* setting new handlers */
   const replyBtn:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".bottomCommentF0");
   replyBtn.forEach((i:HTMLDivElement, orderNumber:number) => {
-    function placeReplyForm (event:MouseEvent):void {
+    function placeReplyForm  (event:MouseEvent):void {
       activeUser.placeReply(
                              Number((parentElFind(event) as HTMLDivElement).dataset.cIDX), orderNumber );
     };
@@ -603,10 +605,12 @@ function rebuildAll (krit:string = normal, order:boolean = false) {
     inputTextForm(activeUser.getName, 0);
   }
 };
-function getProp (DomElement:HTMLElement, propertyName:string):string{
+function getProp (DomElement:HTMLElement|null, propertyName:string):string{
+  if (DomElement instanceof HTMLElement){
   return window
     .getComputedStyle(DomElement, null)
     .getPropertyValue(propertyName);
+  } else {return ''};
 };
 function putDiv (
   className:string,
@@ -776,7 +780,7 @@ function putDiv (
     underLineSwitch(favControl);
   });
   // end of 		---	favorites on/off Menu control		---
-  function putBtn (className1:string, baseForm:HTMLDivElement, caption:string, func:EventListener):HTMLButtonElement {
+  function putBtn (className1:string, baseForm:HTMLDivElement, caption:string, func:buttonFunctionType):HTMLButtonElement {
     const sample:HTMLButtonElement = doc.createElement("button");
     sample.innerHTML = caption;
     sample.className = className1;
@@ -810,7 +814,7 @@ function putDiv (
       backArrowPic:string  = `<img class='talkBackArrow' src='img/talkBackArrow.gif'>`,
       dateTimeFieldClass:string  = `${startDiv}'dateTimeField'>`,
       dateTimeSepar:string  = "89162318y",
-      dateTimeSpace:number = 9;
+      dateTimeSpace:string = '9';
     let replyToName:string = "* unknown *",
       userData:userPassportType = uBase[usrID["byCIDX"][IDX]],
       hFC:string[] = [],
@@ -830,7 +834,7 @@ function putDiv (
       userData = uBase[usrID["byRIDX"][IDX]];
       bottomF = "bottomReplyF";
       favItemOrder = 0;
-      replyToName = uBase[usrID["byCIDX"][base[IDX]["tocIDX"]]]["name"];
+      replyToName = uBase[usrID["byCIDX"][base[IDX]["toCIDX"]]]["name"];
       if (!mobile376) {
         pushReplyTo();
       }
@@ -961,7 +965,7 @@ function putDiv (
           if (reply) {
             cBFs.marginLeft = "";
           } else {
-            cBFs.marginLeft = 15 + px;
+            cBFs.marginLeft = '15' + px;
           }
           if (activeUser.findFav(IDX, base)) {
             contentBottomF.innerHTML = inFav;
@@ -976,15 +980,15 @@ function putDiv (
               (contentBottomF as HTMLDivElement).innerHTML = inFav;
               // parent comment switch to favorite
               if (base === rBase) {
-                if (!activeUser.findFav(rBase[IDX]["tocIDX"])) {
+                if (!activeUser.findFav(rBase[IDX]["toCIDX"])) {
                   // comment block favorite display on
                   const cmntFavFPool:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".bottomCommentF1");
                   cmntFavFPool.forEach((i:HTMLDivElement) => {
-                    if (Number(i.dataset.cIDX) === rBase[IDX]["tocIDX"]) {
+                    if (Number(i.dataset.cIDX) === rBase[IDX]["toCIDX"]) {
                       i.innerHTML = inFav;
                     }
                   });
-                  activeUser.setFav(rBase[IDX]["tocIDX"]);
+                  activeUser.setFav(rBase[IDX]["toCIDX"]);
                 }
               }
             } else {
@@ -993,7 +997,7 @@ function putDiv (
                 // reply blocks favorites displays off
                 const rplytFavFPool:NodeListOf<HTMLDivElement> = doc.querySelectorAll(".bottomReplyF0");
                 rBase.forEach((i:rBaseItem, rIDX:number) => {
-                  if (i["tocIDX"] === IDX && activeUser.findFav(rIDX, rBase)) {
+                  if (i["toCIDX"] === IDX && activeUser.findFav(rIDX, rBase)) {
                     activeUser.setFav(rIDX, rBase);
                     // all replies favorites displays set off
                     rplytFavFPool.forEach((replyFav) => {
@@ -1023,11 +1027,11 @@ function getSpHoopWidth (clasName:string):number {
     putDiv("commentBlockSeparator", frameElement, 0);
     const replyBlock:HTMLDivElement = putDiv("replyBlock", frameElement, 0),
       spHoop:HTMLDivElement = putDiv("spHoop", replyBlock);
-    if (spHoopWidth===0) {
-      spHoopWidth =
-        getSpHoopWidth("userAvatarWrap") + getSpHoopWidth("userContentLMargin");
+    if (spHoopWidth===null) {
+      spHoopWidth  =
+        ((getSpHoopWidth("userAvatarWrap") + getSpHoopWidth("userContentLMargin")) as any) as number;
       sTor("spHoopWidth", spHoopWidth);
-    }
+    };
     spHoop.style.width = (spHoopWidth as any) as string + px;
     frameElement.remove();
     putDiv("vertMargin", replyBlock, 0);
@@ -1243,7 +1247,7 @@ function getSpHoopWidth (clasName:string):number {
       sumWidth = sumWidth + strToNum(getProp(txtInput, componentWidth));
     });
     sumWidth = sumWidth - strToNum(getProp(txtInput, "margin-left"));
-    headerWidth = sumWidth + px;
+    headerWidth = (sumWidth as any) as string + px;
     headerStyle.width = headerWidth;
   };  // end of inputTextForm proc
 
@@ -1257,7 +1261,7 @@ function getSpHoopWidth (clasName:string):number {
     if (krit) {
       rBase.forEach((reply:rBaseItem, rIDX:number) => {
         if (
-          reply["tocIDX"] === comIDX &&
+          reply["toCIDX"] === comIDX &&
           (!activeUser.showFavOnly() || activeUser.findFav(rIDX, rBase))
         ) {
           auxArray.push({ reply: reply, rIDX: rIDX });
@@ -1319,7 +1323,7 @@ function getSpHoopWidth (clasName:string):number {
 
 /* active user selector control block related */
 function displayActiveUserName (userNumber:number):void {
-  const text:string = `Активен пользователь: ${uBase[userNumber]["name"]} (userID ${userNumber}) *(v.${ver})`,
+  const text:string = `Активен пользователь: ${uBase[userNumber]["name"]} (userID ${(userNumber as any) as string}) *(v.${(ver as any) as string})`,
     nameField:HTMLDivElement = doc.querySelector(".nameField") as HTMLDivElement,
     textLen:number = text.length + ((ver as any) as string).length + 1,
     eventBtns1:NodeListOf<HTMLButtonElement> = doc.querySelectorAll(".eventBtn1");
@@ -1338,11 +1342,86 @@ function displayActiveUserName (userNumber:number):void {
     }
   });
   if (nameField) {
-    nameField.style.width = textLen + "ch";
+    nameField.style.width = (textLen as any) as string + "ch";
     nameField.innerHTML = text;
   }
 };//  end of  displayActiveUserName proc
 
+/* active user selector control block build */
+function buildUserSelector ():void {
+  let lastButton:HTMLButtonElement;
+  // previous selector block removing
+  const prevUsrSlct:HTMLDivElement|null = doc.querySelector(".usrSelector");
+  if (prevUsrSlct) {
+    prevUsrSlct.remove();
+    (doc.querySelector("br") as HTMLBRElement).remove();
+  }
+  const firstDiv:HTMLDivElement|null = doc.querySelector("div"),
+    usrSlct:HTMLDivElement = putDiv("usrSelector"),
+    usrSlctStyl:CSSStyleDeclaration = usrSlct.style,
+    // 
+    selectorLeftMargin:number = strToNum(getProp(centeredWrap, "margin-left")),
+    nameField:HTMLDivElement = putDiv("nameField", usrSlct),
+    cr:HTMLBRElement = doc.createElement("br"),
+    nFldStyl:CSSStyleDeclaration = nameField.style;
+
+  usrSlctStyl.display = "inline-flex";
+  usrSlctStyl.padding = "2px";
+  usrSlctStyl.flexFlow = "row wrap";
+  usrSlctStyl.marginLeft = (selectorLeftMargin as any) as string + px;
+  usrSlctStyl.border = "1px solid lime";
+  usrSlctStyl.boxShadow = "5px 5px 0px 0px lightgray";
+
+  if (mobile376) {
+    usrSlctStyl.width = ((widthBrkPnt - 7) as any) as string + px;
+  }
+
+  nFldStyl.textAlign = "center";
+  nFldStyl.padding = "5px 8px 5px 8px";
+  nFldStyl.background = "mistyrose";
+
+  doc.body.insertBefore(cr, firstDiv);
+  doc.body.insertBefore(usrSlct, cr);
+ /* user switch buttons with handlers */
+ const uBaseLengthAux:number = uBase.length-1;
+ uBase.forEach((i:userPassportType,n:number) => {
+  lastButton = putBtn("eventBtn1", usrSlct, i["name"], () => {
+    displayActiveUserName(newUserLogIn(i["name"]));
+  });
+  lastButton.style.margin = "3px 10px 3px 0px";
+  if (n===uBaseLengthAux) {lastButton.insertAdjacentElement("afterend", nameField);}
+});
+
+}; // end of active user selector control block building ('buildUserSelector' procedure)
+
+/* user login procedure */
+function newUserLogIn (userName:string):number {
+  const userNumber:number = usrID["byName"][userName];
+  commntsAmount.innerHTML = `Комментарии <span class='commentsQuantity'>(${(cBase.length as any) as string})</span>`;
+  checkWidth();
+  activeUser = user[userNumber];
+  heartSwitch();
+  if (activeUser.showFavOnly()) {
+    underLineSwitch(favControl);
+  } else {
+    underLineSwitch(commntsAmount);
+  }
+  return userNumber;
+};
+
+function pageInit ():void{
+  const userNumber:number = newUserLogIn(activeUser.getName); //to show main comment form at page start/refresh
+  buildUserSelector();
+  displayActiveUserName(userNumber);
+  // set name field top margin on selector height > 30 px
+  let blkWidth = getProp(doc.querySelector(".usrSelector"), "height");
+  if (strToNum(blkWidth) > 30) {
+    (doc.querySelector(".nameField") as HTMLDivElement).style.marginTop = '10' + px;
+  }
+};
+pageInit();
+ /* rebuild comments blocks at screen size change */
+ window.onresize = pageInit;
 
 
 };/* end of 		----	M A i N  	P R O C E D U R E 	----	*/
